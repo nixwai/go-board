@@ -1,11 +1,9 @@
 import type { App, Component, Plugin } from 'vue';
 import { version } from '../package.json';
-import { Btn } from './button';
 
 const INSTALLED_KEY = Symbol('INSTALLED_KEY');
 
 const installer = makeInstaller([
-  Btn,
 ]);
 
 export default installer;
