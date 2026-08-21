@@ -11,6 +11,7 @@ import type {
 } from './go-board';
 import GoBoardData from '@sabaki/go-board';
 import { computed, ref, shallowRef } from 'vue';
+import ChessGrid from '../chess-grid/chess-grid.vue';
 import Chessboard from '../chessboard/chessboard.vue';
 
 defineOptions({ name: 'GoBoard' });
@@ -25,7 +26,6 @@ const emit = defineEmits<{
 const DEFAULT_SIZE = 19;
 const MIN_SIZE = 1;
 const MAX_SIZE = 25;
-const COLUMN_LABELS = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
 const BLACK: Exclude<GoSign, 0> = 1;
 
 const boardSize = normalizeChessboardSize(props.size);
@@ -194,68 +194,27 @@ defineExpose<GoBoardExposed>({ play, reset });
     :aria-colcount="boardSize"
     @mouseleave="clearHover"
   >
-    <template v-for="(row, y) in rows" :key="`row-${y}`">
-      <button
-        v-for="(sign, x) in row"
-        :key="`${x}-${y}`"
-        class="go-board__cell"
-        type="button"
-        role="gridcell"
-        :aria-label="`${COLUMN_LABELS[x]}${boardSize - y}`"
-        :aria-pressed="sign !== 0"
-        @mouseenter="setHover(`${COLUMN_LABELS[x]}${boardSize - y}`)"
-        @click="play(`${COLUMN_LABELS[x]}${boardSize - y}`)"
-      >
+    <ChessGrid
+      :rows="rows"
+      @cell-mouseenter="setHover"
+      @cell-click="play"
+    >
+      <template #default="{ sign, position }">
         <span
-          v-if="sign !== 0 || isPreview(`${COLUMN_LABELS[x]}${boardSize - y}`, sign)"
+          v-if="sign !== 0 || isPreview(position, sign)"
           class="go-board__stone"
           :class="{
-            'go-board__stone--black': sign === 1 || isPreview(`${COLUMN_LABELS[x]}${boardSize - y}`, sign) && next === 1,
-            'go-board__stone--white': sign === -1 || isPreview(`${COLUMN_LABELS[x]}${boardSize - y}`, sign) && next === -1,
-            'go-board__stone--preview': isPreview(`${COLUMN_LABELS[x]}${boardSize - y}`, sign),
+            'go-board__stone--black': sign === 1 || isPreview(position, sign) && next === 1,
+            'go-board__stone--white': sign === -1 || isPreview(position, sign) && next === -1,
+            'go-board__stone--preview': isPreview(position, sign),
           }"
         />
-      </button>
-    </template>
+      </template>
+    </ChessGrid>
   </Chessboard>
 </template>
 
 <style scoped>
-.go-board__cell {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-}
-
-.go-board__cell::before,
-.go-board__cell::after {
-  position: absolute;
-  z-index: 0;
-  display: block;
-  content: '';
-  background: #5c421e;
-}
-
-.go-board__cell::before {
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-  transform: translateY(-50%);
-}
-
-.go-board__cell::after {
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
-}
-
 .go-board__stone {
   position: absolute;
   top: 8%;

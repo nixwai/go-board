@@ -29,9 +29,8 @@ function normalizeWidth(value: number | string): string {
 
 <style scoped>
 .go-board {
+  position: relative;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(v-bind('props.size'), minmax(0, 1fr));
   aspect-ratio: 1;
   padding: 1.5%;
   overflow: hidden;
