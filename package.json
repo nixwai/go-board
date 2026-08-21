@@ -1,0 +1,60 @@
+{
+  "name": "@go-board/monorepo",
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.22.0",
+  "description": "",
+  "author": "xy",
+  "license": "MIT",
+  "scripts": {
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
+    "docs:dev": "pnpm run -C docs docs:dev",
+    "docs:build": "pnpm run -C docs docs:build",
+    "play:dev": "pnpm run -C playground dev",
+    "play:build": "pnpm run -C playground build",
+    "build": "pnpm run -C tooling build",
+    "design:release": "pnpm run -C tooling design:release",
+    "design:build": "pnpm run -C tooling design:build",
+    "design:publish": "pnpm run -C tooling design:publish",
+    "tool:release": "pnpm run -C tooling tool:release",
+    "tool:build": "pnpm run -C tooling tool:build",
+    "tool:publish": "pnpm run -C tooling tool:publish",
+    "lint:style": "stylelint \"./**/*.{css,less,vue,html}\"",
+    "lint:style-fix": "stylelint \"./**/*.{css,less,vue,html}\" --fix",
+    "prepare": "husky",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@go-board/design": "workspace:*",
+    "@go-board/tool": "workspace:*"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.3.0",
+    "@types/node": "^26.2.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.1",
+    "eslint-plugin-format": "^2.0.1",
+    "happy-dom": "^20.11.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "postcss": "^8.5.26",
+    "postcss-html": "^2.0.0",
+    "postcss-scss": "^4.0.9",
+    "sass": "^1.102.0",
+    "stylelint": "^17.14.1",
+    "stylelint-config-recess-order": "^7.8.0",
+    "stylelint-config-recommended-scss": "^17.0.1",
+    "stylelint-config-recommended-vue": "^2.0.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^8.1.1",
+    "stylelint-scss": "^7.2.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "lint-staged": {
+    "*.{vue,js,ts,tsx,jsx}": [
+      "eslint . --fix"
+    ]
+  }
+}

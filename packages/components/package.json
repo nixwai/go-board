@@ -1,0 +1,30 @@
+{
+  "name": "@go-board/design",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Vue组件库",
+  "author": "nixwai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nixwai/create-nxy"
+  },
+  "main": "dist/lib/index.js",
+  "module": "dist/es/index.mjs",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "global.d.ts"
+  ],
+  "peerDependencies": {
+    "vue": "^3.5.41"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.4.0"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.11",
+    "@vue/tsconfig": "^0.9.1",
+    "vue": "^3.5.41"
+  }
+}

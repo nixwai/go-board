@@ -1,0 +1,22 @@
+{
+  "name": "playground",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "playground",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@unocss/reset": "^66.7.5",
+    "vue": "^3.5.41"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "unocss": "^66.7.5",
+    "vite": "^8.2.1",
+    "vue-tsc": "^3.3.10"
+  }
+}

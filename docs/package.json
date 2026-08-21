@@ -1,0 +1,20 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.26",
+    "unocss": "^66.7.5",
+    "vitepress": "^1.6.4",
+    "vitepress-demo-plugin": "^1.8.0"
+  }
+}
