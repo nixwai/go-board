@@ -11,6 +11,7 @@ import type {
 } from './go-board';
 import GoBoardData from '@sabaki/go-board';
 import { computed, ref, shallowRef } from 'vue';
+import Chessboard from '../chessboard/chessboard.vue';
 
 defineOptions({ name: 'GoBoard' });
 const props = withDefaults(defineProps<GoBoardProps>(), {
@@ -22,35 +23,26 @@ const emit = defineEmits<{
   move: [payload: GoBoardMoveEvent]
 }>();
 const DEFAULT_SIZE = 19;
-const COLUMN_LABELS = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
 const MIN_SIZE = 1;
 const MAX_SIZE = 25;
+const COLUMN_LABELS = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
 const BLACK: Exclude<GoSign, 0> = 1;
 
-const boardSize = normalizeSize(props.size);
+const boardSize = normalizeChessboardSize(props.size);
 let initialState = createInitialState(boardSize, props.init);
 const board = shallowRef(initialState.board.clone());
 const next = ref(initialState.next);
 const hoverPosition = ref<string>();
 
-const boardStyle = computed(() => ({ width: normalizeWidth(props.width) }));
 const rows = computed(() => board.value.signMap.map(row => [...row]));
 
 type BoardData = InstanceType<typeof GoBoardData>;
 type PlayerSign = Exclude<GoSign, 0>;
 
-function normalizeSize(value: number | string): number {
+function normalizeChessboardSize(value: number | string): number {
   const parsed = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(parsed)) { return DEFAULT_SIZE; }
   return Math.min(MAX_SIZE, Math.max(MIN_SIZE, Math.trunc(parsed)));
-}
-
-function normalizeWidth(value: number | string): string {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) && value > 0 ? `${value}px` : '100%';
-  }
-
-  return value.trim() || '100%';
 }
 
 function normalizeNext(value: GoSign | undefined): PlayerSign {
@@ -194,9 +186,9 @@ defineExpose<GoBoardExposed>({ play, reset });
 </script>
 
 <template>
-  <div
-    class="go-board"
-    :style="boardStyle"
+  <Chessboard
+    :size="boardSize"
+    :width="props.width"
     role="grid"
     :aria-rowcount="boardSize"
     :aria-colcount="boardSize"
@@ -225,22 +217,10 @@ defineExpose<GoBoardExposed>({ play, reset });
         />
       </button>
     </template>
-  </div>
+  </Chessboard>
 </template>
 
 <style scoped>
-.go-board {
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(v-bind(boardSize), minmax(0, 1fr));
-  aspect-ratio: 1;
-  padding: 1.5%;
-  overflow: hidden;
-  background: #dcb35c;
-  border: 1px solid #a77b2f;
-  border-radius: 2px;
-}
-
 .go-board__cell {
   position: relative;
   min-width: 0;

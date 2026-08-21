@@ -13,6 +13,18 @@ function exposed(wrapper: ReturnType<typeof mount>): GoBoardExposed {
 }
 
 describe('goBoard', () => {
+  it('forwards root aria and DOM attributes through chessboard', () => {
+    const wrapper = mount(GoBoard, {
+      attrs: {
+        'aria-label': 'go board',
+        'data-testid': 'go-board',
+      },
+    });
+
+    expect(wrapper.find('.go-board').attributes('aria-label')).toBe('go board');
+    expect(wrapper.find('.go-board').attributes('data-testid')).toBe('go-board');
+  });
+
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 
