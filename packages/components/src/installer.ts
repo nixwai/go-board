@@ -1,9 +1,11 @@
 import type { App, Component, Plugin } from 'vue';
 import { version } from '../package.json';
+import { GoBoard } from './go-board';
 
 const INSTALLED_KEY = Symbol('INSTALLED_KEY');
 
 const installer = makeInstaller([
+  GoBoard,
 ]);
 
 export default installer;

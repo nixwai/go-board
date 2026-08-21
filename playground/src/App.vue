@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { GoBoard } from '../../packages/components/src';
 </script>
 
 <template>
   <div>
-    Hello World!
+    <GoBoard />
   </div>
 </template>

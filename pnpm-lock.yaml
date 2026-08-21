@@ -25,6 +25,9 @@ importers:
       '@types/node':
         specifier: ^26.2.0
         version: 26.2.0
+      '@vitejs/plugin-vue':
+        specifier: ^6.0.8
+        version: 6.0.8(vite@8.2.1(@types/node@26.2.0)(jiti@2.7.0)(sass@1.103.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.11(vitest@4.1.11)
@@ -100,6 +103,9 @@ importers:
 
   packages/components:
     dependencies:
+      '@sabaki/go-board':
+        specifier: ^1.4.3
+        version: 1.4.3
       '@vueuse/core':
         specifier: ^14.4.0
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
@@ -1352,6 +1358,9 @@ packages:
     resolution: {integrity: sha512-zD6NdeWEByGE9QF9vCrlJ5YQB4oq9q91kPZS37Jwj5hOkvR1lTBSpsKhKDw4IJtbQ35LsTS1HD9DZYGKIshU1Q==}
     cpu: [x64]
     os: [win32]
+
+  '@sabaki/go-board@1.4.3':
+    resolution: {integrity: sha512-tXonP7vw7bYcXKSVrN1bhkb/QQi5EfTbDSflBffSp2iabbFbz4JyhEyw0ekbuwR0ntBq6iHky6BfCGF69Z4ttg==}
 
   '@shikijs/core@2.5.0':
     resolution: {integrity: sha512-uu/8RExTKtavlpH7XqnVYBrfBkUc20ngXiX9NSrBhOVZYv/7XQRKUyhtkeflY5QsxC0GbJThCerruZfsUaSldg==}
@@ -5626,6 +5635,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.62.4':
     optional: true
+
+  '@sabaki/go-board@1.4.3': {}
 
   '@shikijs/core@2.5.0':
     dependencies:
