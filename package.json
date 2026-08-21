@@ -2,7 +2,7 @@
   "name": "@go-board/monorepo",
   "version": "1.0.0",
   "packageManager": "pnpm@11.22.0",
-  "description": "",
+  "description": "围棋棋盘组件库",
   "author": "xy",
   "license": "MIT",
   "scripts": {

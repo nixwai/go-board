@@ -5,7 +5,7 @@ import { vitepressDemoPlugin } from 'vitepress-demo-plugin';
 import { zh } from './zh';
 
 export default defineConfig({
-  title: 'Libs',
+  title: 'Go Board',
   rewrites: { 'zh/:rest*': ':rest*' },
   base: '/libs/',
   outDir: resolve(__dirname, '../../../dist/docs'),
@@ -13,7 +13,7 @@ export default defineConfig({
     plugins: [UnoCSS() as any],
     css: { preprocessorOptions: { scss: { api: 'modern-compiler' } } },
   },
-  themeConfig: { socialLinks: [{ icon: 'github', link: 'https://github.com/nixwai/create-nxy' }] },
+  themeConfig: { socialLinks: [{ icon: 'github', link: 'https://github.com/nixwai/go-board' }] },
   markdown: {
     config(md) {
       md.use(vitepressDemoPlugin, { demoDir: resolve(__dirname, '../../examples') });

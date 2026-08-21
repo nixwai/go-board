@@ -3,15 +3,15 @@
 layout: home
 
 hero:
-  name: "名称"
-  text: "介绍..."
-  tagline: 信息...
+  name: "Go Board"
+  text: "围棋棋盘组件库"
+  tagline: 围绕围棋棋盘构建的组件库
   actions:
     - theme: brand
-      text: 示例
+      text: 组件示例
       link: /examples/install
 
 features:
-  - title: 标签
-    details: 说明
+  - title: 围棋棋盘组件
+    details: 可复用的围棋棋盘组件
 ---

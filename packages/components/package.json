@@ -2,12 +2,12 @@
   "name": "@go-board/design",
   "type": "module",
   "version": "0.0.1",
-  "description": "Vue组件库",
+  "description": "围棋棋盘组件库",
   "author": "nixwai",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nixwai/create-nxy"
+    "url": "https://github.com/nixwai/go-board"
   },
   "main": "dist/lib/index.js",
   "module": "dist/es/index.mjs",

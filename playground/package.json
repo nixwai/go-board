@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "description": "playground",
+  "description": "Go Board 围棋棋盘组件库示例",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
