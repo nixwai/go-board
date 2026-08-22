@@ -1,8 +1,5 @@
 import type { Sign } from '@sabaki/go-board';
-
-const DEFAULT_SIZE = 19;
-const MIN_SIZE = 1;
-const MAX_SIZE = 25;
+import { DEFAULT_SIZE, MAX_SIZE, MIN_SIZE } from '../constants';
 
 export function normalizePlayer(value: Sign | undefined) {
   return value === -1 ? -1 : 1;
