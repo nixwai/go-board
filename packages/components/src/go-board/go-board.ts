@@ -1,16 +1,13 @@
+import type { Sign, SignMap } from '@sabaki/go-board';
 import type { ComponentPublicInstance } from 'vue';
+import type { GoGameOptions, PlayerSign } from '../utils/go-game';
 
-export type GoSign = -1 | 0 | 1;
-export type GoLayout = GoSign[][];
-
-export interface GoBoardInit {
-  layout: GoLayout
-  next?: GoSign
-}
+export type GoSign = Sign;
+export type GoLayout = SignMap;
 
 export interface GoBoardUpdateEvent {
   layout: GoLayout
-  next: Exclude<GoSign, 0>
+  player: PlayerSign
 }
 
 export interface GoBoardMoveEvent extends GoBoardUpdateEvent {
@@ -18,14 +15,13 @@ export interface GoBoardMoveEvent extends GoBoardUpdateEvent {
 }
 
 export interface GoBoardProps {
-  size?: number | string
   width?: number | string
-  init?: GoBoardInit
+  init?: GoGameOptions
 }
 
 export interface GoBoardExposed {
   play: (position?: string) => boolean
-  reset: (init?: GoBoardInit) => boolean
+  reset: (options?: GoGameOptions) => boolean
 }
 
 export type GoBoardInstance = ComponentPublicInstance<GoBoardProps, GoBoardExposed>;

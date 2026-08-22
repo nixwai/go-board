@@ -22,11 +22,11 @@ function getPosition(x: number, y: number): string {
   return `${COLUMN_LABELS[x]}${size.value - y}`;
 }
 
-function handleMouseenter(x: number, y: number): void {
+function handleMouseenter(x: number, y: number) {
   emit('cellMouseenter', getPosition(x, y));
 }
 
-function handleClick(x: number, y: number): void {
+function handleClick(x: number, y: number) {
   emit('cellClick', getPosition(x, y));
 }
 </script>

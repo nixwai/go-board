@@ -1,181 +1,77 @@
 <script setup lang="ts">
-import type { SignMap, Vertex } from '@sabaki/go-board';
+import type { GoGameOptions } from '../utils/go-game';
 import type {
   GoBoardExposed,
-  GoBoardInit,
   GoBoardMoveEvent,
   GoBoardProps,
   GoBoardUpdateEvent,
-  GoLayout,
-  GoSign,
 } from './go-board';
-import GoBoardData from '@sabaki/go-board';
-import { computed, ref, shallowRef } from 'vue';
+import { ref } from 'vue';
 import ChessGrid from '../chess-grid/chess-grid.vue';
 import ChessPiece from '../chess-piece/chess-piece.vue';
 import Chessboard from '../chessboard/chessboard.vue';
+import { GoGame } from '../utils/go-game';
 
 defineOptions({ name: 'GoBoard' });
-const props = withDefaults(defineProps<GoBoardProps>(), {
-  size: 19,
-  width: '100%',
-});
+
+const props = withDefaults(defineProps<GoBoardProps>(), { width: '100%' });
+
 const emit = defineEmits<{
   update: [payload: GoBoardUpdateEvent]
   move: [payload: GoBoardMoveEvent]
 }>();
-const DEFAULT_SIZE = 19;
-const MIN_SIZE = 1;
-const MAX_SIZE = 25;
-const BLACK: Exclude<GoSign, 0> = 1;
 
-const boardSize = normalizeChessboardSize(props.size);
-let initialState = createInitialState(boardSize, props.init);
-const goBoard = shallowRef(initialState.board.clone());
-const goNext = ref(initialState.next);
+const goGame = new GoGame(props.init);
+const boardSize = ref(goGame.size);
+const rows = ref(goGame.layout);
+const player = ref(goGame.player);
 const hoverPosition = ref<string>();
 
-const rows = computed(() => goBoard.value.signMap.map(row => [...row]));
-
-type BoardData = InstanceType<typeof GoBoardData>;
-type PlayerSign = Exclude<GoSign, 0>;
-
-function normalizeChessboardSize(value: number | string): number {
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(parsed)) { return DEFAULT_SIZE; }
-  return Math.min(MAX_SIZE, Math.max(MIN_SIZE, Math.trunc(parsed)));
-}
-
-function normalizeNext(value: GoSign | undefined): PlayerSign {
-  return value === -1 ? -1 : BLACK;
-}
-
-function cloneLayout(layout: GoLayout): GoLayout {
-  return layout.map(row => [...row]);
-}
-
-function createEmptyLayout(size: number): GoLayout {
-  return Array.from({ length: size }, () => Array<GoSign>(size).fill(0));
-}
-
-function isValidLayout(layout: GoLayout | undefined, size: number): layout is GoLayout {
-  if (!Array.isArray(layout) || layout.length !== size) { return false; }
-  if (layout.some(row => !Array.isArray(row) || row.length !== size)) { return false; }
-  return layout.every(row => row.every(sign => sign === -1 || sign === 0 || sign === 1));
-}
-
-function createInitialState(size: number, init?: GoBoardInit): { board: BoardData, next: PlayerSign } {
-  if (!init || !isValidLayout(init.layout, size)) {
-    return {
-      board: new GoBoardData(createEmptyLayout(size) as SignMap),
-      next: BLACK,
-    };
-  }
-
-  const candidate = new GoBoardData(cloneLayout(init.layout) as SignMap);
-  if (!candidate.isValid()) {
-    return {
-      board: new GoBoardData(createEmptyLayout(size) as SignMap),
-      next: BLACK,
-    };
-  }
-
-  return { board: candidate, next: normalizeNext(init.next) };
-}
-
-function getSnapshot(): GoLayout {
-  return cloneLayout(goBoard.value.signMap as GoLayout);
-}
-
-function emitUpdate(): void {
+function emitUpdate() {
   emit('update', {
-    layout: getSnapshot(),
-    next: goNext.value,
+    layout: goGame.layout,
+    player: goGame.player,
   });
 }
 
-function normalizePosition(position: string): string | null {
-  const normalized = position.trim().toUpperCase();
-  const match = /^([A-HJ-Z])(\d+)$/.exec(normalized);
-  if (!match) { return null; }
-
-  const row = Number(match[2]);
-  if (!Number.isInteger(row) || row < 1 || row > boardSize) { return null; }
-  return `${match[1]}${row}`;
+function emitMove(position: string) {
+  emit('move', {
+    layout: goGame.layout,
+    player: goGame.player,
+    position,
+  });
 }
 
-function toVertex(position: string): Vertex | null {
-  const normalized = normalizePosition(position);
-  if (!normalized) { return null; }
-
-  const vertex = goBoard.value.parseVertex(normalized);
-  return goBoard.value.has(vertex) ? vertex : null;
-}
-
-function isLegalVertex(vertex: Vertex): boolean {
-  if (goBoard.value.get(vertex) !== 0) { return false; }
-  const analysis = goBoard.value.analyzeMove(goNext.value, vertex);
-  return !analysis.pass && !analysis.overwrite && !analysis.suicide;
+function refresh() {
+  boardSize.value = goGame.size;
+  rows.value = goGame.layout;
+  player.value = goGame.player;
+  hoverPosition.value = undefined;
 }
 
 function play(position?: string): boolean {
-  if (!position?.trim()) {
-    goNext.value = -goNext.value as PlayerSign;
-    hoverPosition.value = undefined;
-    emitUpdate();
-    return true;
+  if (position?.trim()) {
+    if (!goGame.play(position)) { return false; }
+    emitMove(position);
   }
-
-  const normalized = normalizePosition(position);
-  const vertex = toVertex(position);
-  if (!normalized || !vertex || !isLegalVertex(vertex)) { return false; }
-
-  try {
-    goBoard.value = goBoard.value.makeMove(goNext.value, vertex, {
-      preventOverwrite: true,
-      preventSuicide: true,
-    });
-  }
-  catch {
-    return false;
-  }
-
-  goNext.value = -goNext.value as PlayerSign;
-  hoverPosition.value = undefined;
-  emit('update', {
-    layout: getSnapshot(),
-    next: goNext.value,
-  });
-  emit('move', {
-    layout: getSnapshot(),
-    next: goNext.value,
-    position: normalized,
-  });
+  emitUpdate();
+  goGame.rotate();
+  refresh();
   return true;
 }
 
-function reset(init?: GoBoardInit): boolean {
-  if (init !== undefined) {
-    if (!isValidLayout(init.layout, boardSize)) { return false; }
-
-    const candidate = new GoBoardData(cloneLayout(init.layout) as SignMap);
-    if (!candidate.isValid()) { return false; }
-    initialState = { board: candidate, next: normalizeNext(init.next) };
-  }
-
-  goBoard.value = initialState.board.clone();
-  goNext.value = initialState.next;
-  hoverPosition.value = undefined;
+function reset(options?: GoGameOptions): boolean {
+  if (!goGame.reset(options)) { return false; }
+  refresh();
   emitUpdate();
   return true;
 }
 
-function setHover(position: string): void {
-  const vertex = toVertex(position);
-  hoverPosition.value = vertex && isLegalVertex(vertex) ? position : undefined;
+function setHover(position: string) {
+  hoverPosition.value = goGame.isLegal(position) ? position : undefined;
 }
 
-function clearHover(): void {
+function clearHover() {
   hoverPosition.value = undefined;
 }
 
@@ -203,7 +99,7 @@ defineExpose<GoBoardExposed>({ play, reset });
         />
         <ChessPiece
           v-else-if="hoverPosition === position"
-          :sign="goNext"
+          :sign="player"
           preview
         />
       </template>

@@ -1,4 +1,5 @@
-import type { GoBoardExposed, GoBoardInit, GoLayout } from './go-board';
+import type { GoGameOptions } from '../utils/go-game';
+import type { GoBoardExposed, GoLayout } from './go-board';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
@@ -33,13 +34,13 @@ describe('goBoard', () => {
   });
 
   it('renders an initialized layout and uses the requested next sign', async () => {
-    const init: GoBoardInit = {
+    const init: GoGameOptions = {
       layout: [
         [1, 0, 0],
         [0, -1, 0],
         [0, 0, 0],
       ],
-      next: -1,
+      player: -1,
     };
     const wrapper = mount(GoBoard, { props: { size: 3, init } });
 
@@ -53,7 +54,7 @@ describe('goBoard', () => {
     const wrapper = mount(GoBoard, {
       props: {
         size: 3,
-        init: { layout: [[1, 0]], next: -1 },
+        init: { layout: [[1, 0]], player: -1 },
       },
     });
 
@@ -106,11 +107,15 @@ describe('goBoard', () => {
 
     const resetLayout = emptyLayout(3);
     resetLayout[2][2] = 1;
-    expect(api.reset({ layout: resetLayout, next: -1 })).toBe(true);
+    expect(api.reset({ layout: resetLayout, player: -1 })).toBe(true);
     await nextTick();
     expect(wrapper.findAll('.go-board__stone')).toHaveLength(1);
     expect(wrapper.find('.go-board__stone--black').exists()).toBe(true);
-    expect(api.reset({ layout: [[1]], next: 1 })).toBe(false);
+    expect(api.reset({ size: 5 })).toBe(true);
+    await nextTick();
+    expect(wrapper.findAll('.go-board__cell')).toHaveLength(25);
+    expect(wrapper.find('.go-board').attributes('aria-rowcount')).toBe('5');
+    expect(api.reset({ layout: [[1]], player: 1 })).toBe(false);
   });
 
   it('shows a preview for a legal hovered move and hides it after leaving', async () => {
@@ -137,7 +142,7 @@ describe('goBoard', () => {
       [0, 1, 0],
       [0, 0, 0],
     ];
-    const wrapper = mount(GoBoard, { props: { size: 3, init: { layout, next: 1 } } });
+    const wrapper = mount(GoBoard, { props: { size: 3, init: { layout, player: 1 } } });
     const api = exposed(wrapper);
 
     expect(api.play('C3')).toBe(true);
@@ -153,7 +158,7 @@ describe('goBoard', () => {
     const suicideWrapper = mount(GoBoard, {
       props: {
         size: 3,
-        init: { layout: suicideLayout, next: -1 },
+        init: { layout: suicideLayout, player: -1 },
       },
     });
     expect(exposed(suicideWrapper).play('B2')).toBe(false);

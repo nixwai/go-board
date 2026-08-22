@@ -1,14 +1,14 @@
 import type { Sign, SignMap, Vertex } from '@sabaki/go-board';
 import type GoBoardData from '@sabaki/go-board';
 import { cloneSignMap, createBoardData, createSignMap, isValidSignMap } from './commons';
-import { normalizeNextPlayer, normalizePosition, normalizeSize } from './normalize';
+import { normalizePlayer, normalizePosition, normalizeSize } from './normalize';
 
 export type PlayerSign = Exclude<Sign, 0>;
 
 export interface GoGameOptions {
   size?: number | string
   layout?: SignMap
-  next?: PlayerSign
+  player?: PlayerSign
 }
 
 export type GoGamePosition = string | Vertex;
@@ -24,7 +24,7 @@ export class GoGame {
 
   constructor(options?: GoGameOptions) {
     if (!this.reset(options)) {
-      this.clear(options?.next);
+      this.clear(options?.size);
       this.cachedOptions = this.snapshot;
     }
   }
@@ -33,7 +33,7 @@ export class GoGame {
     return this.boardSize;
   }
 
-  get next(): PlayerSign {
+  get player(): PlayerSign {
     return this.current;
   }
 
@@ -45,13 +45,13 @@ export class GoGame {
     return {
       size: this.size,
       layout: this.layout,
-      next: this.current,
+      player: this.current,
     };
   }
 
   reset(options?: GoGameOptions): boolean {
     const newOptions = options || this.cachedOptions;
-    const size = normalizeSize(newOptions?.size);
+    const size = normalizeSize(newOptions?.size ?? this.boardSize);
     if (options?.layout && !isValidSignMap(options.layout, size)) { return false; }
 
     const signMap = options?.layout || createSignMap(size);
@@ -60,36 +60,35 @@ export class GoGame {
 
     this.boardSize = size;
     this.board = candidate;
-    this.current = normalizeNextPlayer(options?.next);
+    this.current = normalizePlayer(options?.player);
     this.cachedOptions = this.snapshot;
     return true;
   }
 
-  clear(size?: number, next?: PlayerSign) {
-    this.boardSize = normalizeSize(size || this.boardSize);
+  clear(size?: number | string, next?: PlayerSign) {
+    this.boardSize = normalizeSize(size ?? this.boardSize);
     const signMap = createSignMap(this.boardSize);
     this.board = createBoardData(signMap);
-    this.current = normalizeNextPlayer(next);
+    this.current = normalizePlayer(next);
   }
 
-  play(position: GoGamePosition, current?: PlayerSign): boolean {
+  play(position: GoGamePosition, player?: PlayerSign): boolean {
     const vertex = this.toVertex(position);
     if (!vertex || !this.isLegalVertex(vertex)) {
       return false;
     }
 
     try {
-      this.board = this.board.makeMove(current || this.current, vertex, {
+      if (player) {
+        this.current = normalizePlayer(player);
+      }
+      this.board = this.board.makeMove(this.current, vertex, {
         preventOverwrite: true,
         preventSuicide: true,
       });
     }
     catch {
       return false;
-    }
-
-    if (!current) {
-      this.rotate();
     }
     return true;
   }
