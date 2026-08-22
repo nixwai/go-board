@@ -12,6 +12,7 @@ import type {
 import GoBoardData from '@sabaki/go-board';
 import { computed, ref, shallowRef } from 'vue';
 import ChessGrid from '../chess-grid/chess-grid.vue';
+import ChessPiece from '../chess-piece/chess-piece.vue';
 import Chessboard from '../chessboard/chessboard.vue';
 
 defineOptions({ name: 'GoBoard' });
@@ -178,10 +179,6 @@ function clearHover(): void {
   hoverPosition.value = undefined;
 }
 
-function isPreview(position: string, sign: GoSign): boolean {
-  return sign === 0 && hoverPosition.value === position;
-}
-
 defineExpose<GoBoardExposed>({ play, reset });
 </script>
 
@@ -200,44 +197,16 @@ defineExpose<GoBoardExposed>({ play, reset });
       @cell-click="play"
     >
       <template #default="{ sign, position }">
-        <span
-          v-if="sign !== 0 || isPreview(position, sign)"
-          class="go-board__stone"
-          :class="{
-            'go-board__stone--black': sign === 1 || isPreview(position, sign) && next === 1,
-            'go-board__stone--white': sign === -1 || isPreview(position, sign) && next === -1,
-            'go-board__stone--preview': isPreview(position, sign),
-          }"
+        <ChessPiece
+          v-if="sign"
+          :sign="sign"
+        />
+        <ChessPiece
+          v-else-if="hoverPosition === position"
+          :sign="next"
+          preview
         />
       </template>
     </ChessGrid>
   </Chessboard>
 </template>
-
-<style scoped>
-.go-board__stone {
-  position: absolute;
-  top: 8%;
-  left: 8%;
-  z-index: 1;
-  box-sizing: border-box;
-  width: 84%;
-  height: 84%;
-  border-radius: 50%;
-}
-
-.go-board__stone--black {
-  background: radial-gradient(circle at 35% 30%, #555, #080808 68%);
-  box-shadow: 1px 2px 3px rgb(0 0 0 / 35%);
-}
-
-.go-board__stone--white {
-  background: radial-gradient(circle at 35% 30%, #fff, #d7d7d7 70%);
-  border: 1px solid #999;
-  box-shadow: 1px 2px 3px rgb(0 0 0 / 25%);
-}
-
-.go-board__stone--preview {
-  opacity: 0.45;
-}
-</style>
