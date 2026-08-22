@@ -1,10 +1,6 @@
 import type { Sign, SignMap } from '@sabaki/go-board';
 import GoBoardData from '@sabaki/go-board';
 
-const DEFAULT_SIZE = 19;
-const MIN_SIZE = 1;
-const MAX_SIZE = 25;
-
 export function cloneSignMap(signMap: SignMap): SignMap {
   return signMap.map(row => [...row]);
 }
@@ -17,12 +13,8 @@ export function createBoardData(signMap: SignMap) {
   return new GoBoardData(cloneSignMap(signMap));
 }
 
-export function normalizeNextPlayer(value: Sign | undefined) {
-  return value === -1 ? -1 : 1;
-}
-
-export function normalizeSize(value: number | string): number {
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(parsed)) { return DEFAULT_SIZE; }
-  return Math.min(MAX_SIZE, Math.max(MIN_SIZE, Math.trunc(parsed)));
+export function isValidSignMap(signMap: SignMap | undefined, size: number) {
+  if (!Array.isArray(signMap) || signMap.length !== size) { return false; }
+  if (signMap.some(row => !Array.isArray(row) || row.length !== size)) { return false; }
+  return signMap.every(row => row.every(sign => sign === -1 || sign === 0 || sign === 1));
 }

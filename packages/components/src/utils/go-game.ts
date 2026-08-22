@@ -1,35 +1,32 @@
 import type { Sign, SignMap, Vertex } from '@sabaki/go-board';
 import type GoBoardData from '@sabaki/go-board';
-import { cloneSignMap, createBoardData, createSignMap, normalizeNextPlayer, normalizeSize } from './commons';
+import { cloneSignMap, createBoardData, createSignMap, isValidSignMap } from './commons';
+import { normalizeNextPlayer, normalizePosition, normalizeSize } from './normalize';
 
 export type PlayerSign = Exclude<Sign, 0>;
 
 export interface GoGameOptions {
-  layout: SignMap
-  next: PlayerSign
+  size?: number | string
+  layout?: SignMap
+  next?: PlayerSign
 }
 
-export interface GoGameMove extends GoGameOptions {
-  position: string
-}
+export type GoGamePosition = string | Vertex;
 
 type BoardData = InstanceType<typeof GoBoardData>;
 
-const DEFAULT_SIZE = 19;
-const BLACK: PlayerSign = 1;
-
 export class GoGame {
-  private readonly boardSize: number;
-  private board: BoardData;
-  private current: PlayerSign;
-  private initialState: GoGameOptions;
+  private boardSize!: number;
+  private board!: BoardData;
+  private current!: PlayerSign;
 
-  constructor(size: number | string = DEFAULT_SIZE, options?: GoGameOptions) {
-    this.boardSize = normalizeSize(size);
-    const initialState = GoGame.createInitialState(this.boardSize, options);
-    this.initialState = initialState;
-    this.board = createBoardData(initialState.layout);
-    this.current = initialState.next;
+  private cachedOptions?: GoGameOptions;
+
+  constructor(options?: GoGameOptions) {
+    if (!this.reset(options)) {
+      this.clear(options?.next);
+      this.cachedOptions = this.snapshot;
+    }
   }
 
   get size(): number {
@@ -44,39 +41,45 @@ export class GoGame {
     return cloneSignMap(this.board.signMap);
   }
 
-  getSnapshot(): GoGameOptions {
+  get snapshot(): Required<GoGameOptions> {
     return {
-      layout: cloneSignMap(this.board.signMap),
+      size: this.size,
+      layout: this.layout,
       next: this.current,
     };
   }
 
-  getBoard(): BoardData {
-    return this.board.clone();
+  reset(options?: GoGameOptions): boolean {
+    const newOptions = options || this.cachedOptions;
+    const size = normalizeSize(newOptions?.size);
+    if (options?.layout && !isValidSignMap(options.layout, size)) { return false; }
+
+    const signMap = options?.layout || createSignMap(size);
+    const candidate = createBoardData(signMap);
+    if (!candidate.isValid()) { return false; }
+
+    this.boardSize = size;
+    this.board = candidate;
+    this.current = normalizeNextPlayer(options?.next);
+    this.cachedOptions = this.snapshot;
+    return true;
   }
 
-  getSign(position: string): Sign | undefined {
+  clear(size?: number, next?: PlayerSign) {
+    this.boardSize = normalizeSize(size || this.boardSize);
+    const signMap = createSignMap(this.boardSize);
+    this.board = createBoardData(signMap);
+    this.current = normalizeNextPlayer(next);
+  }
+
+  play(position: GoGamePosition, current?: PlayerSign): boolean {
     const vertex = this.toVertex(position);
-    return vertex ? this.board.get(vertex) as Sign : undefined;
-  }
-
-  isLegal(position: string): boolean {
-    const vertex = this.toVertex(position);
-    return vertex !== null && this.isLegalVertex(vertex);
-  }
-
-  play(position?: string): boolean {
-    if (!position?.trim()) {
-      this.current = -this.current as PlayerSign;
-      return true;
+    if (!vertex || !this.isLegalVertex(vertex)) {
+      return false;
     }
 
-    const normalized = this.normalizePosition(position);
-    const vertex = this.toVertex(position);
-    if (!normalized || !vertex || !this.isLegalVertex(vertex)) { return false; }
-
     try {
-      this.board = this.board.makeMove(this.current, vertex, {
+      this.board = this.board.makeMove(current || this.current, vertex, {
         preventOverwrite: true,
         preventSuicide: true,
       });
@@ -85,80 +88,41 @@ export class GoGame {
       return false;
     }
 
-    this.current = -this.current as PlayerSign;
-    return true;
-  }
-
-  reset(options?: GoGameOptions): boolean {
-    if (options !== undefined) {
-      if (!GoGame.isValidLayout(options.layout, this.boardSize)) { return false; }
-
-      const candidate = createBoardData(options.layout);
-      if (!candidate.isValid()) { return false; }
-      this.initialState = {
-        layout: cloneSignMap(options.layout),
-        next: normalizeNextPlayer(options.next),
-      };
+    if (!current) {
+      this.rotate();
     }
-
-    this.board = createBoardData(this.initialState.layout);
-    this.current = this.initialState.next;
     return true;
   }
 
-  normalizePosition(position: string): string | null {
-    const normalized = position.trim().toUpperCase();
-    const match = /^([A-HJ-Z])(\d+)$/.exec(normalized);
-    if (!match) { return null; }
-
-    const row = Number(match[2]);
-    if (!Number.isInteger(row) || row < 1 || row > this.boardSize) { return null; }
-    return `${match[1]}${row}`;
+  rotate() {
+    this.current = -this.current as PlayerSign;
   }
 
-  parsePosition(position: string): Vertex | null {
-    return this.toVertex(position);
+  getSign(position: GoGamePosition): Sign | undefined {
+    const vertex = this.toVertex(position);
+    return vertex ? this.board.get(vertex) as Sign : undefined;
   }
 
-  private toVertex(position: string): Vertex | null {
-    const normalized = this.normalizePosition(position);
-    if (!normalized) { return null; }
-
-    const vertex = this.board.parseVertex(normalized);
-    return this.board.has(vertex) ? vertex : null;
+  isLegal(position: GoGamePosition): boolean {
+    const vertex = this.toVertex(position);
+    return this.isLegalVertex(vertex);
   }
 
-  private isLegalVertex(vertex: Vertex): boolean {
+  private toVertex(position: GoGamePosition): Vertex | null {
+    if (typeof position === 'string') {
+      const normalized = normalizePosition(position);
+      if (!normalized) { return null; }
+      position = this.board.parseVertex(normalized);
+    }
+    return this.board.has(position) ? position : null;
+  }
+
+  private isLegalVertex(vertex?: Vertex | null): boolean {
+    if (!vertex) { return false; }
+
     if (this.board.get(vertex) !== 0) { return false; }
+
     const analysis = this.board.analyzeMove(this.current, vertex);
     return !analysis.pass && !analysis.overwrite && !analysis.suicide;
-  }
-
-  private static isValidLayout(layout: SignMap | undefined, size: number): layout is SignMap {
-    if (!Array.isArray(layout) || layout.length !== size) { return false; }
-    if (layout.some(row => !Array.isArray(row) || row.length !== size)) { return false; }
-    return layout.every(row => row.every(sign => sign === -1 || sign === 0 || sign === 1));
-  }
-
-  private static createInitialState(size: number, options?: GoGameOptions): GoGameOptions {
-    if (!options || !GoGame.isValidLayout(options.layout, size)) {
-      return {
-        layout: createSignMap(size),
-        next: BLACK,
-      };
-    }
-
-    const candidate = createBoardData(options.layout);
-    if (!candidate.isValid()) {
-      return {
-        layout: createSignMap(size),
-        next: BLACK,
-      };
-    }
-
-    return {
-      layout: cloneSignMap(options.layout),
-      next: normalizeNextPlayer(options.next),
-    };
   }
 }
