@@ -1,9 +1,6 @@
-import type { Sign, SignMap } from '@sabaki/go-board';
 import type { ComponentPublicInstance } from 'vue';
+import type { GoLayout } from '../types';
 import type { GoGameOptions, PlayerSign } from '../utils/go-game';
-
-export type GoSign = Sign;
-export type GoLayout = SignMap;
 
 export interface GoBoardUpdateEvent {
   layout: GoLayout
