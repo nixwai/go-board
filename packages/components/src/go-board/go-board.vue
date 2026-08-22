@@ -31,11 +31,11 @@ const BLACK: Exclude<GoSign, 0> = 1;
 
 const boardSize = normalizeChessboardSize(props.size);
 let initialState = createInitialState(boardSize, props.init);
-const board = shallowRef(initialState.board.clone());
-const next = ref(initialState.next);
+const goBoard = shallowRef(initialState.board.clone());
+const goNext = ref(initialState.next);
 const hoverPosition = ref<string>();
 
-const rows = computed(() => board.value.signMap.map(row => [...row]));
+const rows = computed(() => goBoard.value.signMap.map(row => [...row]));
 
 type BoardData = InstanceType<typeof GoBoardData>;
 type PlayerSign = Exclude<GoSign, 0>;
@@ -84,13 +84,13 @@ function createInitialState(size: number, init?: GoBoardInit): { board: BoardDat
 }
 
 function getSnapshot(): GoLayout {
-  return cloneLayout(board.value.signMap as GoLayout);
+  return cloneLayout(goBoard.value.signMap as GoLayout);
 }
 
 function emitUpdate(): void {
   emit('update', {
     layout: getSnapshot(),
-    next: next.value,
+    next: goNext.value,
   });
 }
 
@@ -108,19 +108,19 @@ function toVertex(position: string): Vertex | null {
   const normalized = normalizePosition(position);
   if (!normalized) { return null; }
 
-  const vertex = board.value.parseVertex(normalized);
-  return board.value.has(vertex) ? vertex : null;
+  const vertex = goBoard.value.parseVertex(normalized);
+  return goBoard.value.has(vertex) ? vertex : null;
 }
 
 function isLegalVertex(vertex: Vertex): boolean {
-  if (board.value.get(vertex) !== 0) { return false; }
-  const analysis = board.value.analyzeMove(next.value, vertex);
+  if (goBoard.value.get(vertex) !== 0) { return false; }
+  const analysis = goBoard.value.analyzeMove(goNext.value, vertex);
   return !analysis.pass && !analysis.overwrite && !analysis.suicide;
 }
 
 function play(position?: string): boolean {
   if (!position?.trim()) {
-    next.value = -next.value as PlayerSign;
+    goNext.value = -goNext.value as PlayerSign;
     hoverPosition.value = undefined;
     emitUpdate();
     return true;
@@ -131,7 +131,7 @@ function play(position?: string): boolean {
   if (!normalized || !vertex || !isLegalVertex(vertex)) { return false; }
 
   try {
-    board.value = board.value.makeMove(next.value, vertex, {
+    goBoard.value = goBoard.value.makeMove(goNext.value, vertex, {
       preventOverwrite: true,
       preventSuicide: true,
     });
@@ -140,15 +140,15 @@ function play(position?: string): boolean {
     return false;
   }
 
-  next.value = -next.value as PlayerSign;
+  goNext.value = -goNext.value as PlayerSign;
   hoverPosition.value = undefined;
   emit('update', {
     layout: getSnapshot(),
-    next: next.value,
+    next: goNext.value,
   });
   emit('move', {
     layout: getSnapshot(),
-    next: next.value,
+    next: goNext.value,
     position: normalized,
   });
   return true;
@@ -163,8 +163,8 @@ function reset(init?: GoBoardInit): boolean {
     initialState = { board: candidate, next: normalizeNext(init.next) };
   }
 
-  board.value = initialState.board.clone();
-  next.value = initialState.next;
+  goBoard.value = initialState.board.clone();
+  goNext.value = initialState.next;
   hoverPosition.value = undefined;
   emitUpdate();
   return true;
@@ -203,7 +203,7 @@ defineExpose<GoBoardExposed>({ play, reset });
         />
         <ChessPiece
           v-else-if="hoverPosition === position"
-          :sign="next"
+          :sign="goNext"
           preview
         />
       </template>
