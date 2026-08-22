@@ -2,6 +2,7 @@
 import type { ChessPieceProps } from './chess-piece';
 
 defineOptions({ name: 'ChessPiece' });
+/** 为预览状态提供默认值，普通棋子默认完整显示。 */
 withDefaults(defineProps<ChessPieceProps>(), { preview: false });
 </script>
 

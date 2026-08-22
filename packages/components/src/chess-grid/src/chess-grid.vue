@@ -5,27 +5,37 @@ import { computed, useAttrs } from 'vue';
 defineOptions({ name: 'ChessGrid', inheritAttrs: false });
 const props = defineProps<ChessGridProps>();
 const emit = defineEmits<{
+  /** 鼠标进入棋盘单元时通知当前坐标。 */
   cellMouseenter: [position: string]
+  /** 点击棋盘单元时通知当前坐标。 */
   cellClick: [position: string]
 }>();
 defineSlots<{
+  /** 渲染单元内容时提供棋子标记和棋盘坐标。 */
   default: (props: ChessGridSlotProps) => unknown
 }>();
 
+/** 将透传属性显式绑定到稳定的根节点。 */
 const attrs = useAttrs();
 
+/** 跳过字母 I 的棋盘列标签。 */
 const COLUMN_LABELS = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
+/** 复制输入行，避免内部渲染依赖调用方数组的后续变更。 */
 const rows = computed(() => props.rows.map(row => [...row]));
+/** 当前棋盘的边长，用于计算坐标和网格列数。 */
 const size = computed(() => rows.value.length);
 
+/** 将二维数组索引转换为围棋坐标。 */
 function getPosition(x: number, y: number): string {
   return `${COLUMN_LABELS[x]}${size.value - y}`;
 }
 
+/** 转发单元鼠标进入事件，并附带标准化棋盘坐标。 */
 function handleMouseenter(x: number, y: number) {
   emit('cellMouseenter', getPosition(x, y));
 }
 
+/** 转发单元点击事件，并附带标准化棋盘坐标。 */
 function handleClick(x: number, y: number) {
   emit('cellClick', getPosition(x, y));
 }
