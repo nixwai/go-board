@@ -1,4 +1,4 @@
-import type { GoSign } from '../types';
+import type { GoSign } from '../../types';
 
 export interface ChessPieceProps {
   sign: Exclude<GoSign, 0>

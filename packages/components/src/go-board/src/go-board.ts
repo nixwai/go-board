@@ -1,6 +1,6 @@
 import type { ComponentPublicInstance } from 'vue';
-import type { GoLayout } from '../types';
-import type { GoGameOptions, PlayerSign } from '../utils/go-game';
+import type { GoLayout } from '../../types';
+import type { GoGameOptions, PlayerSign } from '../../utils/go-game';
 
 export interface GoBoardUpdateEvent {
   layout: GoLayout

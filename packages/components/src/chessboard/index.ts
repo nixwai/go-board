@@ -1,2 +1,2 @@
-export * from './chessboard';
-export { default as Chessboard } from './chessboard.vue';
+export * from './src/chessboard';
+export { default as Chessboard } from './src/chessboard.vue';

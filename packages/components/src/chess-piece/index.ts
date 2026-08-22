@@ -1,2 +1,2 @@
-export type { ChessPieceProps } from './chess-piece';
-export { default as ChessPiece } from './chess-piece.vue';
+export type { ChessPieceProps } from './src/chess-piece';
+export { default as ChessPiece } from './src/chess-piece.vue';

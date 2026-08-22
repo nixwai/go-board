@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import ChessGrid from './chess-grid.vue';
+import ChessGrid from '../src/chess-grid.vue';
 
 describe('chessGrid', () => {
   it('renders cells and passes sign and position to the scoped slot', () => {

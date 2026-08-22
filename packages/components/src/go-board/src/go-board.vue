@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GoGameOptions } from '../utils/go-game';
+import type { GoGameOptions } from '../../utils/go-game';
 import type {
   GoBoardExposed,
   GoBoardMoveEvent,
@@ -7,10 +7,10 @@ import type {
   GoBoardUpdateEvent,
 } from './go-board';
 import { ref } from 'vue';
-import ChessGrid from '../chess-grid/chess-grid.vue';
-import ChessPiece from '../chess-piece/chess-piece.vue';
-import Chessboard from '../chessboard/chessboard.vue';
-import { GoGame } from '../utils/go-game';
+import ChessGrid from '../../chess-grid/src/chess-grid.vue';
+import ChessPiece from '../../chess-piece/src/chess-piece.vue';
+import Chessboard from '../../chessboard/src/chessboard.vue';
+import { GoGame } from '../../utils/go-game';
 
 defineOptions({ name: 'GoBoard' });
 

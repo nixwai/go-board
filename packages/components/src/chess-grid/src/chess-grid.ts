@@ -1,4 +1,4 @@
-import type { GoSign } from '../types';
+import type { GoSign } from '../../types';
 
 export interface ChessGridProps {
   rows: GoSign[][]

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import Chessboard from './chessboard.vue';
+import Chessboard from '../src/chessboard.vue';
 
 describe('chessboard', () => {
   it('renders the requested size and width', () => {

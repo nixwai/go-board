@@ -1,10 +1,10 @@
-import type { GoLayout } from '../types';
-import type { GoGameOptions } from '../utils/go-game';
-import type { GoBoardExposed } from './go-board';
+import type { GoLayout } from '../../types';
+import type { GoGameOptions } from '../../utils/go-game';
+import type { GoBoardExposed } from '../src/go-board';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
-import GoBoard from './go-board.vue';
+import GoBoard from '../src/go-board.vue';
 
 function emptyLayout(size: number): GoLayout {
   return Array.from({ length: size }, () => Array.from({ length: size }).fill(0)) as GoLayout;

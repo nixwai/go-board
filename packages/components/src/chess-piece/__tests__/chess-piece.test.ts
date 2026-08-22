@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import ChessPiece from './chess-piece.vue';
+import ChessPiece from '../src/chess-piece.vue';
 
 describe('chessPiece', () => {
   it('renders a black or white piece from the sign', () => {
