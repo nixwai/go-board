@@ -2,3 +2,4 @@
 export * from './src/chessboard';
 /** 导出棋盘容器组件。 */
 export { default as Chessboard } from './src/chessboard.vue';
+export type { ChessboardInstance } from './src/instance';

@@ -1,4 +1,3 @@
-import type { ComponentPublicInstance } from 'vue';
 import type { GoLayout } from '../../types';
 import type { GoGameOptions, PlayerSign } from '../../utils/go-game';
 
@@ -31,6 +30,3 @@ export interface GoBoardExposed {
   /** 使用新的配置重置棋盘。 */
   reset: (options?: GoGameOptions) => boolean
 }
-
-/** 围棋棋盘组件实例类型。 */
-export type GoBoardInstance = ComponentPublicInstance<GoBoardProps, GoBoardExposed>;

@@ -55,6 +55,6 @@ export default defineConfig([
       emitDtsOnly: true,
       tsconfig: resolve(projRoot, 'tsconfig.json'),
     },
-    plugins: [Vue({ isProduction: true })],
+    plugins: [],
   },
 ]);
