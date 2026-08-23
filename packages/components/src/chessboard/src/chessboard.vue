@@ -23,7 +23,7 @@ function normalizeWidth(value: number | string): string {
 <template>
   <div
     v-bind="attrs"
-    class="go-board"
+    class="chessboard"
     :style="boardStyle"
   >
     <slot />
@@ -31,7 +31,7 @@ function normalizeWidth(value: number | string): string {
 </template>
 
 <style scoped>
-.go-board {
+.chessboard {
   position: relative;
   box-sizing: border-box;
   aspect-ratio: 1;

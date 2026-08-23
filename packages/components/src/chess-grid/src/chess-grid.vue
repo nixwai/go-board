@@ -47,7 +47,7 @@ function handleClick(x: number, y: number) {
       <button
         v-for="(sign, x) in row"
         :key="`${x}-${y}`"
-        class="go-board__cell"
+        class="chess-grid-cell"
         type="button"
         role="gridcell"
         :aria-label="getPosition(x, y)"
@@ -69,7 +69,7 @@ function handleClick(x: number, y: number) {
   height: 100%;
 }
 
-.go-board__cell {
+.chess-grid-cell {
   position: relative;
   min-width: 0;
   min-height: 0;
@@ -79,8 +79,8 @@ function handleClick(x: number, y: number) {
   border: 0;
 }
 
-.go-board__cell::before,
-.go-board__cell::after {
+.chess-grid-cell::before,
+.chess-grid-cell::after {
   position: absolute;
   z-index: 0;
   display: block;
@@ -88,7 +88,7 @@ function handleClick(x: number, y: number) {
   background: #5c421e;
 }
 
-.go-board__cell::before {
+.chess-grid-cell::before {
   top: 50%;
   right: 0;
   left: 0;
@@ -96,7 +96,7 @@ function handleClick(x: number, y: number) {
   transform: translateY(-50%);
 }
 
-.go-board__cell::after {
+.chess-grid-cell::after {
   top: 0;
   bottom: 0;
   left: 50%;

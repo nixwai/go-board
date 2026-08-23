@@ -14,8 +14,8 @@ describe('chessGrid', () => {
       slots: { default: ({ sign, position }) => `${position}:${sign}` },
     });
 
-    expect(wrapper.findAll('.go-board__cell')).toHaveLength(4);
-    expect(wrapper.findAll('.go-board__cell').map(cell => cell.text())).toEqual([
+    expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(4);
+    expect(wrapper.findAll('.chess-grid-cell').map(cell => cell.text())).toEqual([
       'A2:1',
       'B2:0',
       'A1:0',
@@ -35,7 +35,7 @@ describe('chessGrid', () => {
   it('emits cell interactions with the cell position', async () => {
     const wrapper = mount(ChessGrid, { props: { rows: [[0]] } });
 
-    const cell = wrapper.find('.go-board__cell');
+    const cell = wrapper.find('.chess-grid-cell');
     await cell.trigger('mouseenter');
     await cell.trigger('click');
 

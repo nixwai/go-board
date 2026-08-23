@@ -30,7 +30,7 @@ describe('goBoard', () => {
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 
-    expect(wrapper.findAll('.go-board__cell')).toHaveLength(19 * 19);
+    expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(19 * 19);
     expect(wrapper.find('.go-board').attributes('style')).toContain('width: 100%');
   });
 
@@ -45,10 +45,10 @@ describe('goBoard', () => {
     };
     const wrapper = mount(GoBoard, { props: { size: 3, init } });
 
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(2);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(2);
     expect(exposed(wrapper).play('C1')).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__stone--white')).toHaveLength(2);
+    expect(wrapper.findAll('.chess-piece-stone-white')).toHaveLength(2);
   });
 
   it('falls back to an empty board for invalid initialization', async () => {
@@ -59,10 +59,10 @@ describe('goBoard', () => {
       },
     });
 
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(0);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     expect(exposed(wrapper).play('A1')).toBe(true);
     await nextTick();
-    expect(wrapper.find('.go-board__stone--black').exists()).toBe(true);
+    expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
   });
 
   it('plays moves, alternates signs, and emits update and move snapshots', async () => {
@@ -70,10 +70,10 @@ describe('goBoard', () => {
 
     expect(exposed(wrapper).play('a1')).toBe(true);
     await nextTick();
-    expect(wrapper.find('.go-board__stone--black').exists()).toBe(true);
+    expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
     expect(exposed(wrapper).play('B2')).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(2);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(2);
 
     const updates = wrapper.emitted('update') ?? [];
     const moves = wrapper.emitted('move') ?? [];
@@ -103,18 +103,18 @@ describe('goBoard', () => {
     expect(api.play('A1')).toBe(true);
     expect(api.reset()).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(0);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     expect(api.play('A1')).toBe(true);
 
     const resetLayout = emptyLayout(3);
     resetLayout[2][2] = 1;
     expect(api.reset({ layout: resetLayout, player: -1 })).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(1);
-    expect(wrapper.find('.go-board__stone--black').exists()).toBe(true);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(1);
+    expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
     expect(api.reset({ size: 5 })).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__cell')).toHaveLength(25);
+    expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(25);
     expect(wrapper.find('.go-board').attributes('aria-rowcount')).toBe('5');
     expect(api.reset({ layout: [[1]], player: 1 })).toBe(false);
   });
@@ -124,16 +124,16 @@ describe('goBoard', () => {
     const cell = wrapper.find('[aria-label="A1"]');
 
     await cell.trigger('mouseenter');
-    expect(wrapper.find('.go-board__stone--preview').exists()).toBe(true);
+    expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(true);
     await wrapper.find('.go-board').trigger('mouseleave');
-    expect(wrapper.find('.go-board__stone--preview').exists()).toBe(false);
+    expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
   });
 
   it('plays a move from a mouse click', async () => {
     const wrapper = mount(GoBoard, { props: { size: 3 } });
 
     await wrapper.find('[aria-label="A1"]').trigger('click');
-    expect(wrapper.find('.go-board__stone--black').exists()).toBe(true);
+    expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
     expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ position: 'A1' });
   });
 
@@ -148,8 +148,8 @@ describe('goBoard', () => {
 
     expect(api.play('C3')).toBe(true);
     await nextTick();
-    expect(wrapper.findAll('.go-board__stone')).toHaveLength(3);
-    expect(wrapper.find('.go-board__stone--white').exists()).toBe(false);
+    expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(3);
+    expect(wrapper.find('.chess-piece-stone-white').exists()).toBe(false);
 
     const suicideLayout: GoLayout = [
       [0, 1, 0],

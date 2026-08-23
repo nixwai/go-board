@@ -6,8 +6,8 @@ describe('chessboard', () => {
   it('renders the requested size and width', () => {
     const wrapper = mount(Chessboard, { props: { size: 3, width: 240 } });
 
-    expect(wrapper.find('.go-board').attributes('style')).toContain('width: 240px');
-    expect(wrapper.findAll('.go-board__cell')).toHaveLength(0);
+    expect(wrapper.find('.chessboard').attributes('style')).toContain('width: 240px');
+    expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(0);
   });
 
   it('forwards aria and DOM attributes to the root element', () => {
@@ -19,7 +19,7 @@ describe('chessboard', () => {
       },
     });
 
-    const board = wrapper.find('.go-board');
+    const board = wrapper.find('.chessboard');
     expect(board.attributes('aria-label')).toBe('go board');
     expect(board.attributes('data-testid')).toBe('chessboard');
     expect(board.attributes('tabindex')).toBe('0');

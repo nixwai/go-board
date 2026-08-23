@@ -8,17 +8,17 @@ withDefaults(defineProps<ChessPieceProps>(), { preview: false });
 
 <template>
   <span
-    class="go-board__stone"
+    class="chess-piece-stone"
     :class="{
-      'go-board__stone--black': sign === 1,
-      'go-board__stone--white': sign === -1,
-      'go-board__stone--preview': preview,
+      'chess-piece-stone-black': sign === 1,
+      'chess-piece-stone-white': sign === -1,
+      'chess-piece-stone-preview': preview,
     }"
   />
 </template>
 
 <style scoped>
-.go-board__stone {
+.chess-piece-stone {
   position: absolute;
   top: 8%;
   left: 8%;
@@ -29,18 +29,18 @@ withDefaults(defineProps<ChessPieceProps>(), { preview: false });
   border-radius: 50%;
 }
 
-.go-board__stone--black {
+.chess-piece-stone-black {
   background: radial-gradient(circle at 35% 30%, #555, #080808 68%);
   box-shadow: 1px 2px 3px rgb(0 0 0 / 35%);
 }
 
-.go-board__stone--white {
+.chess-piece-stone-white {
   background: radial-gradient(circle at 35% 30%, #fff, #d7d7d7 70%);
   border: 1px solid #999;
   box-shadow: 1px 2px 3px rgb(0 0 0 / 25%);
 }
 
-.go-board__stone--preview {
+.chess-piece-stone-preview {
   opacity: 0.45;
 }
 </style>

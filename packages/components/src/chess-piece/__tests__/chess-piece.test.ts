@@ -7,17 +7,17 @@ describe('chessPiece', () => {
     const black = mount(ChessPiece, { props: { sign: 1 } });
     const white = mount(ChessPiece, { props: { sign: -1 } });
 
-    expect(black.find('.go-board__stone').classes()).toContain('go-board__stone--black');
-    expect(white.find('.go-board__stone').classes()).toContain('go-board__stone--white');
+    expect(black.find('.chess-piece-stone').classes()).toContain('chess-piece-stone-black');
+    expect(white.find('.chess-piece-stone').classes()).toContain('chess-piece-stone-white');
   });
 
   it('renders a preview piece', () => {
     const wrapper = mount(ChessPiece, { props: { sign: 1, preview: true } });
 
-    expect(wrapper.find('.go-board__stone').classes()).toEqual([
-      'go-board__stone',
-      'go-board__stone--black',
-      'go-board__stone--preview',
+    expect(wrapper.find('.chess-piece-stone').classes()).toEqual([
+      'chess-piece-stone',
+      'chess-piece-stone-black',
+      'chess-piece-stone-preview',
     ]);
   });
 });
