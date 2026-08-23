@@ -1,23 +1,23 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'tsdown';
 import Vue from 'unplugin-vue/rolldown';
-import { designOutput, designRoot, projRoot } from './paths.ts';
+import { projRoot, uiOutput, uiRoot } from './paths.ts';
 
 const sharedConfig = {
-  cwd: designRoot,
+  cwd: uiRoot,
   entry: { index: 'src/index.ts' },
   root: '.',
   unbundle: true,
   sourcemap: true,
   clean: false,
   platform: 'neutral' as const,
-  deps: { neverBundle: ['vue', '@go-board/tool', '@go-board/ui'] },
+  deps: { neverBundle: ['vue', '@go-board/tool'] },
   plugins: [
     Vue({ isProduction: true }),
   ],
   outputOptions: {
     exports: 'named' as const,
-    preserveModulesRoot: designRoot,
+    preserveModulesRoot: uiRoot,
   },
 };
 
@@ -26,7 +26,7 @@ export default defineConfig([
     ...sharedConfig,
     format: 'esm',
     dts: false,
-    outDir: resolve(designOutput, 'es'),
+    outDir: resolve(uiOutput, 'es'),
     outExtensions: () => ({ js: '.mjs' }),
     css: {
       splitting: true,
@@ -37,7 +37,7 @@ export default defineConfig([
     ...sharedConfig,
     format: 'cjs',
     dts: false,
-    outDir: resolve(designOutput, 'lib'),
+    outDir: resolve(uiOutput, 'lib'),
     outExtensions: () => ({ js: '.js' }),
     css: {
       splitting: true,
@@ -47,7 +47,7 @@ export default defineConfig([
   {
     ...sharedConfig,
     format: 'esm',
-    outDir: resolve(designOutput, 'types'),
+    outDir: resolve(uiOutput, 'types'),
     dts: {
       vue: true,
       emitDtsOnly: true,

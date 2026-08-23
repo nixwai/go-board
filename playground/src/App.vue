@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GoBoard } from '../../packages/components/src';
+import { GoBoard } from '@go-board/design';
 </script>
 
 <template>

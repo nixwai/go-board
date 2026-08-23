@@ -30,7 +30,7 @@ function normalizeWidth(value: number | string): string {
   </div>
 </template>
 
-<style scoped>
+<style>
 .chessboard {
   position: relative;
   box-sizing: border-box;

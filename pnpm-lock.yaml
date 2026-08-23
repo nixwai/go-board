@@ -106,6 +106,21 @@ importers:
       '@go-board/tool':
         specifier: workspace:*
         version: link:../utils
+      '@go-board/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@vue/test-utils':
+        specifier: ^2.4.11
+        version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
+      '@vue/tsconfig':
+        specifier: ^0.9.1
+        version: 0.9.1(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
+      vue:
+        specifier: ^3.5.41
+        version: 3.5.41(typescript@6.0.3)
+
+  packages/ui:
     devDependencies:
       '@vue/test-utils':
         specifier: ^2.4.11
@@ -125,6 +140,9 @@ importers:
 
   playground:
     dependencies:
+      '@go-board/design':
+        specifier: workspace:*
+        version: link:../packages/components
       '@unocss/reset':
         specifier: ^66.7.5
         version: 66.8.0
@@ -170,6 +188,18 @@ importers:
         version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.28(typescript@6.0.3))(typescript@6.0.3)(vue-tsc@3.3.10(typescript@6.0.3))
 
   tooling/components:
+    devDependencies:
+      '@tsdown/css':
+        specifier: ^0.22.14
+        version: 0.22.14(jiti@2.7.0)(postcss@8.5.26)(sass@1.103.0)(tsdown@0.22.14)(yaml@2.9.0)
+      unplugin-vue:
+        specifier: ^7.2.0
+        version: 7.2.0(@types/node@26.2.0)(jiti@2.7.0)(rolldown@1.2.5)(rollup@4.62.4)(sass@1.103.0)(vue@3.5.41(typescript@6.0.3))(yaml@2.9.0)
+      vue:
+        specifier: ^3.5.41
+        version: 3.5.41(typescript@6.0.3)
+
+  tooling/ui:
     devDependencies:
       '@tsdown/css':
         specifier: ^0.22.14

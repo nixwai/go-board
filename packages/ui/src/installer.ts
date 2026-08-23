@@ -1,10 +1,16 @@
 import type { App, Component, Plugin } from 'vue';
 import { version } from '../package.json';
-import { GoBoard } from './go-board';
+import { ChessGrid } from './chess-grid';
+import { ChessPiece } from './chess-piece';
+import { Chessboard } from './chessboard';
 
 const INSTALLED_KEY = Symbol('INSTALLED_KEY');
 
-const installer = makeInstaller([GoBoard]);
+const installer = makeInstaller([
+  ChessGrid,
+  ChessPiece,
+  Chessboard,
+]);
 
 export default installer;
 

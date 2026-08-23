@@ -61,7 +61,7 @@ function handleClick(x: number, y: number) {
   </div>
 </template>
 
-<style scoped>
+<style>
 .chess-grid {
   display: grid;
   grid-template-columns: repeat(v-bind('size'), minmax(0, 1fr));

@@ -6,11 +6,10 @@ import type {
   GoBoardProps,
   GoBoardUpdateEvent,
 } from './go-board';
+
 import { GoGame } from '@go-board/tool';
+import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
-import ChessGrid from '../../chess-grid/src/chess-grid.vue';
-import ChessPiece from '../../chess-piece/src/chess-piece.vue';
-import Chessboard from '../../chessboard/src/chessboard.vue';
 
 defineOptions({ name: 'GoBoard' });
 

@@ -3,10 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "build": "run-p design:build tool:build",
+    "build": "run-s tool:build ui:build design:build",
     "design:release": "gulp release -f components/index.ts",
     "design:build": "gulp build -f components/index.ts",
     "design:publish": "gulp publish -f components/index.ts",
+    "ui:release": "gulp release -f ui/index.ts",
+    "ui:build": "gulp build -f ui/index.ts",
+    "ui:publish": "gulp publish -f ui/index.ts",
     "tool:release": "gulp release -f utils/index.ts",
     "tool:build": "gulp build -f utils/index.ts",
     "tool:publish": "gulp publish -f utils/index.ts"

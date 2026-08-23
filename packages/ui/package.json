@@ -1,8 +1,8 @@
 {
-  "name": "@go-board/design",
+  "name": "@go-board/ui",
   "type": "module",
   "version": "0.0.1",
-  "description": "围棋棋盘组件库",
+  "description": "Go Board UI 组件库",
   "author": "nixwai",
   "license": "MIT",
   "repository": {
@@ -25,10 +25,6 @@
   ],
   "peerDependencies": {
     "vue": "^3.3.0"
-  },
-  "dependencies": {
-    "@go-board/tool": "workspace:*",
-    "@go-board/ui": "workspace:*"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.11",

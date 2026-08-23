@@ -17,7 +17,7 @@ withDefaults(defineProps<ChessPieceProps>(), { preview: false });
   />
 </template>
 
-<style scoped>
+<style>
 .chess-piece-stone {
   position: absolute;
   top: 8%;
