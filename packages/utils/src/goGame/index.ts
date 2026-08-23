@@ -1,23 +1,8 @@
-import type { Sign, SignMap, Vertex } from '@sabaki/go-board';
 import type GoBoardData from '@sabaki/go-board';
-import { cloneSignMap, createBoardData, createSignMap, isValidSignMap } from './commons';
-import { normalizePlayer, normalizePosition, normalizeSize } from './normalize';
-
-/** 可落子的棋子标记，不包含空位标记 0。 */
-export type PlayerSign = Exclude<Sign, 0>;
-
-/** 围棋对局初始化和重置配置。 */
-export interface GoGameOptions {
-  /** 棋盘尺寸。 */
-  size?: number | string
-  /** 初始棋盘布局。 */
-  layout?: SignMap
-  /** 初始执棋方。 */
-  player?: PlayerSign
-}
-
-/** 支持文本坐标或规则引擎顶点的落子位置。 */
-export type GoGamePosition = string | Vertex;
+import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, PlayerSign } from '../types';
+import { cloneLayout, createBoardData, createLayout } from '../create';
+import { normalizePlayer, normalizePosition, normalizeSize } from '../normalize';
+import { isValidLayout } from '../verify';
 
 type BoardData = InstanceType<typeof GoBoardData>;
 
@@ -52,8 +37,8 @@ export class GoGame {
   }
 
   /** 返回当前棋盘布局的副本。 */
-  get layout(): SignMap {
-    return cloneSignMap(this.board.signMap);
+  get layout(): GoLayout {
+    return cloneLayout(this.board.signMap);
   }
 
   /** 返回包含尺寸、布局和执棋方的完整对局快照。 */
@@ -69,9 +54,9 @@ export class GoGame {
   reset(options?: GoGameOptions): boolean {
     const newOptions = options || this.cachedOptions;
     const size = normalizeSize(newOptions?.size ?? this.boardSize);
-    if (options?.layout && !isValidSignMap(options.layout, size)) { return false; }
+    if (options?.layout && !isValidLayout(options.layout, size)) { return false; }
 
-    const signMap = options?.layout || createSignMap(size);
+    const signMap = options?.layout || createLayout(size);
     const candidate = createBoardData(signMap);
     if (!candidate.isValid()) { return false; }
 
@@ -85,7 +70,7 @@ export class GoGame {
   /** 清空棋盘，并设置新的尺寸和执棋方。 */
   clear(size?: number | string, next?: PlayerSign) {
     this.boardSize = normalizeSize(size ?? this.boardSize);
-    const signMap = createSignMap(this.boardSize);
+    const signMap = createLayout(this.boardSize);
     this.board = createBoardData(signMap);
     this.current = normalizePlayer(next);
   }
@@ -118,9 +103,9 @@ export class GoGame {
   }
 
   /** 获取指定位置的棋子标记。 */
-  getSign(position: GoGamePosition): Sign | undefined {
+  getSign(position: GoGamePosition): GoSign | undefined {
     const vertex = this.toVertex(position);
-    return vertex ? this.board.get(vertex) as Sign : undefined;
+    return vertex ? this.board.get(vertex) as GoSign : undefined;
   }
 
   /** 判断指定位置对当前执棋方是否为合法落点。 */
@@ -130,7 +115,7 @@ export class GoGame {
   }
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */
-  private toVertex(position: GoGamePosition): Vertex | null {
+  private toVertex(position: GoGamePosition): GoVertex | null {
     if (typeof position === 'string') {
       const normalized = normalizePosition(position);
       if (!normalized) { return null; }
@@ -140,7 +125,7 @@ export class GoGame {
   }
 
   /** 使用规则引擎分析顶点，排除占用、提子规则和自杀手。 */
-  private isLegalVertex(vertex?: Vertex | null): boolean {
+  private isLegalVertex(vertex?: GoVertex | null): boolean {
     if (!vertex) { return false; }
 
     if (this.board.get(vertex) !== 0) { return false; }

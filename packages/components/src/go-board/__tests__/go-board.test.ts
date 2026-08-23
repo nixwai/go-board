@@ -1,5 +1,5 @@
-import type { GoLayout } from '../../types';
-import type { GoGameOptions } from '../../utils/go-game';
+import type { GoGameOptions, GoLayout } from '@go-board/tool';
+
 import type { GoBoardExposed } from '../src/go-board';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';

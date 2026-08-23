@@ -3,7 +3,7 @@ import { GoBoard } from '../../packages/components/src';
 </script>
 
 <template>
-  <div>
+  <div class="max-w-200">
     <GoBoard />
   </div>
 </template>

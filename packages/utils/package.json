@@ -9,6 +9,13 @@
     "type": "git",
     "url": "https://github.com/nixwai/go-board"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/es/index.mjs",
+      "require": "./dist/lib/index.js"
+    }
+  },
   "main": "dist/lib/index.js",
   "module": "dist/es/index.mjs",
   "types": "dist/types/index.d.ts",
@@ -16,9 +23,6 @@
     "dist"
   ],
   "dependencies": {
-    "lodash-es": "^4.18.1"
-  },
-  "devDependencies": {
-    "@types/lodash-es": "^4.17.12"
+    "@sabaki/go-board": "^1.4.3"
   }
 }

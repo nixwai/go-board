@@ -1,4 +1,4 @@
-import type { GoSign } from '../../types';
+import type { GoSign } from '@go-board/tool';
 
 /** 棋子组件的输入属性。 */
 export interface ChessPieceProps {

@@ -9,7 +9,7 @@ const sharedConfig = {
   sourcemap: true,
   clean: false,
   platform: 'neutral' as const,
-  deps: { neverBundle: [] }, // 根据实际使用情况来确定
+  deps: { neverBundle: ['@sabaki/go-board'] }, // 根据实际使用情况来确定
   outputOptions: { exports: 'named' as const },
 };
 

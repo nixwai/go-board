@@ -1,5 +1,4 @@
-import type { GoLayout } from '../../types';
-import type { GoGameOptions, PlayerSign } from '../../utils/go-game';
+import type { GoGameOptions, GoLayout, PlayerSign } from '@go-board/tool';
 
 /** 棋盘状态更新事件的数据结构。 */
 export interface GoBoardUpdateEvent {
