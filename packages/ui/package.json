@@ -1,7 +1,7 @@
 {
   "name": "@go-board/ui",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Go Board UI 组件库",
   "author": "nixwai",
   "license": "MIT",
