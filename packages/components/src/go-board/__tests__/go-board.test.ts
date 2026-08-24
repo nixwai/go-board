@@ -23,15 +23,15 @@ describe('goBoard', () => {
       },
     });
 
-    expect(wrapper.find('.go-board').attributes('aria-label')).toBe('go board');
-    expect(wrapper.find('.go-board').attributes('data-testid')).toBe('go-board');
+    expect(wrapper.find('.chessboard').attributes('aria-label')).toBe('go board');
+    expect(wrapper.find('.chessboard').attributes('data-testid')).toBe('go-board');
   });
 
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 
     expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(19 * 19);
-    expect(wrapper.find('.go-board').attributes('style')).toContain('width: 100%');
+    expect(wrapper.find('.chessboard').attributes('style')).toContain('width: 100%');
   });
 
   it('renders an initialized layout and uses the requested next sign', async () => {
@@ -43,7 +43,7 @@ describe('goBoard', () => {
       ],
       player: -1,
     };
-    const wrapper = mount(GoBoard, { props: { size: 3, init } });
+    const wrapper = mount(GoBoard, { props: { init: { ...init, size: 3 } } });
 
     expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(2);
     expect(exposed(wrapper).play('C1')).toBe(true);
@@ -55,7 +55,7 @@ describe('goBoard', () => {
     const wrapper = mount(GoBoard, {
       props: {
         size: 3,
-        init: { layout: [[1, 0]], player: -1 },
+        init: { size: 3, layout: [[1, 0]], player: -1 },
       },
     });
 
@@ -66,7 +66,7 @@ describe('goBoard', () => {
   });
 
   it('plays moves, alternates signs, and emits update and move snapshots', async () => {
-    const wrapper = mount(GoBoard, { props: { size: 3 } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
 
     expect(exposed(wrapper).play('a1')).toBe(true);
     await nextTick();
@@ -79,12 +79,12 @@ describe('goBoard', () => {
     const moves = wrapper.emitted('move') ?? [];
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
-    expect(moves[0]?.[0]).toMatchObject({ position: 'A1', next: -1 });
+    expect(moves[0]?.[0]).toMatchObject({ position: 'a1', player: 1 });
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
   });
 
   it('rejects occupied and invalid positions without events', () => {
-    const wrapper = mount(GoBoard, { props: { size: 3 } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
     const api = exposed(wrapper);
 
     expect(api.play('A1')).toBe(true);
@@ -96,7 +96,7 @@ describe('goBoard', () => {
   });
 
   it('supports passing and reset', async () => {
-    const wrapper = mount(GoBoard, { props: { size: 3 } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
     const api = exposed(wrapper);
 
     expect(api.play()).toBe(true);
@@ -115,22 +115,22 @@ describe('goBoard', () => {
     expect(api.reset({ size: 5 })).toBe(true);
     await nextTick();
     expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(25);
-    expect(wrapper.find('.go-board').attributes('aria-rowcount')).toBe('5');
+    expect(wrapper.find('.chessboard').attributes('aria-rowcount')).toBe('5');
     expect(api.reset({ layout: [[1]], player: 1 })).toBe(false);
   });
 
   it('shows a preview for a legal hovered move and hides it after leaving', async () => {
-    const wrapper = mount(GoBoard, { props: { size: 3 } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
     const cell = wrapper.find('[aria-label="A1"]');
 
     await cell.trigger('mouseenter');
     expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(true);
-    await wrapper.find('.go-board').trigger('mouseleave');
+    await wrapper.find('.chessboard').trigger('mouseleave');
     expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
   });
 
   it('plays a move from a mouse click', async () => {
-    const wrapper = mount(GoBoard, { props: { size: 3 } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
 
     await wrapper.find('[aria-label="A1"]').trigger('click');
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
@@ -143,7 +143,7 @@ describe('goBoard', () => {
       [0, 1, 0],
       [0, 0, 0],
     ];
-    const wrapper = mount(GoBoard, { props: { size: 3, init: { layout, player: 1 } } });
+    const wrapper = mount(GoBoard, { props: { init: { size: 3, layout, player: 1 } } });
     const api = exposed(wrapper);
 
     expect(api.play('C3')).toBe(true);
@@ -159,7 +159,7 @@ describe('goBoard', () => {
     const suicideWrapper = mount(GoBoard, {
       props: {
         size: 3,
-        init: { layout: suicideLayout, player: -1 },
+        init: { size: 3, layout: suicideLayout, player: -1 },
       },
     });
     expect(exposed(suicideWrapper).play('B2')).toBe(false);

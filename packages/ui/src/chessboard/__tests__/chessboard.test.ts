@@ -61,7 +61,7 @@ describe('chessboard', () => {
       const coordinate = getPointCoordinates(size)((size - 1) / 2);
 
       expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(1);
-      expect(point.attributes()).toMatchObject({ cx: coordinate, cy: coordinate, r: '0.625' });
+      expect(point.attributes()).toMatchObject({ cx: coordinate, cy: coordinate, r: '0.5' });
     }
   });
 
@@ -89,7 +89,7 @@ describe('chessboard', () => {
 
       expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(expected.length);
       expect(wrapper.findAll('.chessboard-stars circle').map(circle => circle.attributes())).toEqual(
-        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.625' })),
+        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.5' })),
       );
     }
   });
@@ -111,7 +111,7 @@ describe('chessboard', () => {
 
       expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(expected.length);
       expect(wrapper.findAll('.chessboard-stars circle').map(circle => circle.attributes())).toEqual(
-        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.625' })),
+        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.5' })),
       );
     }
   });
