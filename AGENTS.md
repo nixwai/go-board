@@ -2,7 +2,7 @@
 
 ## 项目概览
 
-Go Board 是一个基于 Vue 3 和 TypeScript 的围棋棋盘组件库，使用 pnpm workspace 管理多个内部包、构建工具、演示应用和文档站点。
+Go Board 是一个基于 Vue 3 和 TypeScript 的围棋棋盘组件库，使用 pnpm workspace 管理多个内部包、构建工具和演示应用。
 
 ## 项目结构
 
@@ -10,7 +10,6 @@ Go Board 是一个基于 Vue 3 和 TypeScript 的围棋棋盘组件库，使用 
 - `packages/utils`：工具包 `@go-board/tool`。
 - `tooling`：组件包和工具包的构建、版本发布与发布工具。
 - `playground`：基于 Vite 的本地组件预览应用。
-- `docs`：基于 VitePress 的中文文档站点。
 - `dist`：构建生成目录，不提交到版本库。
 - `node_modules`：依赖安装目录，不提交到版本库。
 
@@ -42,18 +41,15 @@ pnpm coverage
 # 构建组件包和工具包
 pnpm build
 
-# 构建文档站点
-pnpm docs:build
 
 # 构建 playground
 pnpm play:build
 
-# 本地启动文档和 playground
-pnpm docs:dev
+# 本地启动 playground
 pnpm play:dev
 ```
 
-提交代码前，至少运行与改动范围相关的 lint、样式检查、测试和构建命令；涉及文档或 playground 时，同时运行对应构建命令。
+提交代码前，至少运行与改动范围相关的 lint、样式检查、测试和构建命令；涉及 playground 时，同时运行对应构建命令。
 
 ## 组件开发约定
 
@@ -116,7 +112,6 @@ pnpm play:dev
 ## 已知非阻断提示
 
 - 当前运行 Vitest 可能提示 `vitest.config.ts` 使用 ESM 语法但按 CommonJS 加载的配置警告。
-- VitePress 构建可能提示压缩后 chunk 超过 500 kB。
 - 上述提示在命令最终成功时不视为本次改动失败；如果出现新的错误、退出码异常或与改动直接相关的警告，应单独调查。
 
 ## 变更验证

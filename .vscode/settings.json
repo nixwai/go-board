@@ -3,8 +3,6 @@
     "antfu",
     "stylelint",
     "unocss",
-    "vitepress",
-    "vuepress",
     "vueuse"
   ],
   "css.validate": false,

@@ -1,8 +1,8 @@
-import type { GoSign } from '../types';
+import type { PlayerSign } from '../types';
 import { DEFAULT_SIZE, MAX_SIZE, MIN_SIZE } from '../constants';
 
 /** 将执棋方归一化为黑方或白方，非法值默认使用黑方。 */
-export function normalizePlayer(value: GoSign | undefined) {
+export function normalizePlayer(value?: number): PlayerSign {
   return value === -1 ? -1 : 1;
 }
 
