@@ -23,6 +23,12 @@ describe('chessGrid', () => {
     ]);
   });
 
+  it('does not render board lines', () => {
+    const wrapper = mount(ChessGrid, { props: { rows: [[0]] } });
+
+    expect(wrapper.find('.chess-grid-lines').exists()).toBe(false);
+  });
+
   it('forwards DOM attributes to the grid root', () => {
     const wrapper = mount(ChessGrid, {
       props: { rows: [[0]] },

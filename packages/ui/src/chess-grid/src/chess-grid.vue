@@ -78,29 +78,4 @@ function handleClick(x: number, y: number) {
   background: transparent;
   border: 0;
 }
-
-.chess-grid-cell::before,
-.chess-grid-cell::after {
-  position: absolute;
-  z-index: 0;
-  display: block;
-  content: '';
-  background: #5c421e;
-}
-
-.chess-grid-cell::before {
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-  transform: translateY(-50%);
-}
-
-.chess-grid-cell::after {
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
-}
 </style>
