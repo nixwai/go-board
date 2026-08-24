@@ -165,3 +165,7 @@ isValidLayout(layout, 2); // true
 | `GoGamePosition` | 落子位置：文本坐标或 `GoVertex`。 |
 | `PlayerSign` | 执棋方：`-1 \| 1`。 |
 | `GoGameOptions` | `GoGame` 的初始化和重置配置。 |
+
+## License
+
+[MIT](../../LICENSE) License
