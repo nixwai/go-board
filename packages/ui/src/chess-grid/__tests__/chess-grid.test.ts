@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import ChessGrid from '../src/chess-grid.vue';
@@ -27,6 +29,16 @@ describe('chessGrid', () => {
     const wrapper = mount(ChessGrid, { props: { rows: [[0]] } });
 
     expect(wrapper.find('.chess-grid-lines').exists()).toBe(false);
+  });
+
+  it('keeps the grid in the board guide overlay area', () => {
+    const source = readFileSync(resolve(process.cwd(), 'packages/ui/src/chess-grid/src/chess-grid.vue'), 'utf8');
+    const style = source.match(/\.chess-grid\s*\{([\s\S]*?)\}/)?.[1] ?? '';
+
+    expect(style).toMatch(/position:\s*absolute/);
+    expect(style).toMatch(/inset:\s*1\.5%/);
+    expect(style).toMatch(/width:\s*calc\(100% - 3%\)/);
+    expect(style).toMatch(/height:\s*calc\(100% - 3%\)/);
   });
 
   it('forwards DOM attributes to the grid root', () => {

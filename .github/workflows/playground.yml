@@ -1,4 +1,4 @@
-﻿name: Deploy Playground
+name: Deploy Playground
 
 on:
   workflow_dispatch:
