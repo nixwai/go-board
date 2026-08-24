@@ -2,6 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import Chessboard from '../src/chessboard.vue';
 
+function getPointCoordinates(size: number) {
+  return (position: number) => `${((position + 0.5) / size) * 100}`;
+}
+
 describe('chessboard', () => {
   it('renders the requested size and width', () => {
     const wrapper = mount(Chessboard, { props: { size: 3, width: 240 } });
@@ -47,6 +51,68 @@ describe('chessboard', () => {
         y1: `${firstCenter}`,
         y2: `${lastCenter}`,
       });
+    }
+  });
+
+  it('renders the center star only for odd boards smaller than 9', () => {
+    for (const size of [1, 7]) {
+      const wrapper = mount(Chessboard, { props: { size } });
+      const point = wrapper.find('.chessboard-stars circle');
+      const coordinate = getPointCoordinates(size)((size - 1) / 2);
+
+      expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(1);
+      expect(point.attributes()).toMatchObject({ cx: coordinate, cy: coordinate, r: '0.625' });
+    }
+  });
+
+  it('does not render stars for even boards smaller than 9', () => {
+    for (const size of [2, 8]) {
+      const wrapper = mount(Chessboard, { props: { size } });
+
+      expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(0);
+    }
+  });
+
+  it('renders four corner stars and an optional center star for sizes 9 through 12', () => {
+    for (const size of [9, 10, 11, 12]) {
+      const wrapper = mount(Chessboard, { props: { size } });
+      const coordinate = getPointCoordinates(size);
+      const cornerPoints = [
+        [2, 2],
+        [size - 3, 2],
+        [2, size - 3],
+        [size - 3, size - 3],
+      ];
+      const expected = size % 2 === 0
+        ? cornerPoints
+        : [...cornerPoints, [(size - 1) / 2, (size - 1) / 2]];
+
+      expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(expected.length);
+      expect(wrapper.findAll('.chessboard-stars circle').map(circle => circle.attributes())).toEqual(
+        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.625' })),
+      );
+    }
+  });
+
+  it('renders corner stars and optional center stars for sizes 13 or larger', () => {
+    for (const size of [13, 14, 19]) {
+      const wrapper = mount(Chessboard, { props: { size } });
+      const coordinate = getPointCoordinates(size);
+      const center = (size - 1) / 2;
+      const anchors = [3, center, size - 4];
+      const expected = size % 2 === 0
+        ? [
+            [3, 3],
+            [size - 4, 3],
+            [3, size - 4],
+            [size - 4, size - 4],
+          ]
+        : anchors.flatMap(x => anchors.map(y => [x, y]));
+
+      expect(wrapper.findAll('.chessboard-stars circle')).toHaveLength(expected.length);
+      expect(wrapper.findAll('.chessboard-stars circle').map(circle => circle.attributes())).toEqual(
+        expected.map(([x, y]) => ({ cx: coordinate(x), cy: coordinate(y), r: '0.625' })),
+      );
     }
   });
 

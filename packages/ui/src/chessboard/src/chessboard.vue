@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ChessboardProps } from './chessboard';
 import { computed, useAttrs } from 'vue';
+import ChessboardLines from './components/chessboard-lines.vue';
+import ChessboardStars from './components/chessboard-stars.vue';
 
 defineOptions({ name: 'Chessboard', inheritAttrs: false });
 const props = withDefaults(defineProps<ChessboardProps>(), { width: '100%' });
@@ -8,11 +10,6 @@ const attrs = useAttrs();
 
 /** 用于网格线计数和位置计算的棋盘尺寸。 */
 const size = computed(() => normalizeSize(props.size));
-/** 根据棋盘尺寸预计算所有网格线的偏移量。 */
-const lineOffsets = computed(() => {
-  const boardSize = size.value;
-  return Array.from({ length: boardSize }, (_, index) => ((index + 0.5) / boardSize) * 100);
-});
 /** 将公开宽度属性转换为 CSS 值。 */
 const boardStyle = computed(() => ({ width: normalizeWidth(props.width) }));
 
@@ -42,30 +39,8 @@ function normalizeWidth(value: number | string): string {
     class="chessboard"
     :style="boardStyle"
   >
-    <svg
-      class="chessboard-lines"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      fill="none"
-      aria-hidden="true"
-    >
-      <line
-        v-for="(offset, index) in lineOffsets"
-        :key="`horizontal-${index}`"
-        :x1="lineOffsets[0]"
-        :x2="lineOffsets[lineOffsets.length - 1]"
-        :y1="offset"
-        :y2="offset"
-      />
-      <line
-        v-for="(offset, index) in lineOffsets"
-        :key="`vertical-${index}`"
-        :x1="offset"
-        :x2="offset"
-        :y1="lineOffsets[0]"
-        :y2="lineOffsets[lineOffsets.length - 1]"
-      />
-    </svg>
+    <ChessboardLines :size="size" />
+    <ChessboardStars :size="size" />
     <slot />
   </div>
 </template>
@@ -80,20 +55,5 @@ function normalizeWidth(value: number | string): string {
   background: #dcb35c;
   border: 1px solid #a77b2f;
   border-radius: 2px;
-}
-
-.chessboard-lines {
-  position: absolute;
-  inset: 1.5%;
-  z-index: 0;
-  display: block;
-  width: calc(100% - 3%);
-  height: calc(100% - 3%);
-  overflow: visible;
-  pointer-events: none;
-  stroke: #5c421e;
-  stroke-width: 0.25px;
-  stroke-linecap: square;
-  vector-effect: non-scaling-stroke;
 }
 </style>
