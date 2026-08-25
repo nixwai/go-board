@@ -1,5 +1,5 @@
 import { series } from 'gulp';
-import { version } from '../../packages/components/package.json';
+import { version } from '../../packages/design/package.json';
 import { delPath, publishTask, releaseTask, runBuildCommand, runBuildSteps } from '../common/tasks';
 import { designOutput, designRoot } from './paths';
 

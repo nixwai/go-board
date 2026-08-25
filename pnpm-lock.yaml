@@ -14,10 +14,10 @@ importers:
     dependencies:
       '@go-board/design':
         specifier: workspace:*
-        version: link:packages/components
+        version: link:packages/design
       '@go-board/tool':
         specifier: workspace:*
-        version: link:packages/utils
+        version: link:packages/tool
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^9.3.0
@@ -86,13 +86,13 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@26.2.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.11.6)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(sass@1.103.1)(yaml@2.9.0))
 
-  packages/components:
+  packages/design:
     dependencies:
       '@go-board/tool':
-        specifier: workspace:*
-        version: link:../utils
+        specifier: workspace:^
+        version: link:../tool
       '@go-board/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
     devDependencies:
       '@vue/test-utils':
@@ -104,6 +104,12 @@ importers:
       vue:
         specifier: ^3.5.41
         version: 3.5.41(typescript@6.0.3)
+
+  packages/tool:
+    dependencies:
+      '@sabaki/go-board':
+        specifier: ^1.4.3
+        version: 1.4.3
 
   packages/ui:
     devDependencies:
@@ -117,17 +123,11 @@ importers:
         specifier: ^3.5.41
         version: 3.5.41(typescript@6.0.3)
 
-  packages/utils:
-    dependencies:
-      '@sabaki/go-board':
-        specifier: ^1.4.3
-        version: 1.4.3
-
   playground:
     dependencies:
       '@go-board/design':
         specifier: workspace:*
-        version: link:../packages/components
+        version: link:../packages/design
       '@unocss/reset':
         specifier: ^66.8.1
         version: 66.8.1
@@ -172,7 +172,7 @@ importers:
         specifier: ^0.22.14
         version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.28(typescript@6.0.3))(typescript@6.0.3)(vue-tsc@3.3.11(typescript@6.0.3))
 
-  tooling/components:
+  tooling/design:
     devDependencies:
       '@tsdown/css':
         specifier: ^0.22.14
@@ -183,6 +183,8 @@ importers:
       vue:
         specifier: ^3.5.41
         version: 3.5.41(typescript@6.0.3)
+
+  tooling/tool: {}
 
   tooling/ui:
     devDependencies:
@@ -195,8 +197,6 @@ importers:
       vue:
         specifier: ^3.5.41
         version: 3.5.41(typescript@6.0.3)
-
-  tooling/utils: {}
 
 packages:
 

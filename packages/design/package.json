@@ -27,8 +27,8 @@
     "vue": "^3.3.0"
   },
   "dependencies": {
-    "@go-board/tool": "workspace:*",
-    "@go-board/ui": "workspace:*"
+    "@go-board/tool": "workspace:^",
+    "@go-board/ui": "workspace:^"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.11",

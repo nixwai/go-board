@@ -237,7 +237,7 @@ boardRef.value?.reset({ size: 13, player: 1 });
 
 棋局状态管理与棋盘数据工具，均已在此库中导出，可以直接引入使用。
 
-相关使用方法请查看相应文档：[@go-board/tool](https://github.com/nixwai/go-board/blob/main/packages/utils/README.md)
+相关使用方法请查看相应文档：[@go-board/tool](https://github.com/nixwai/go-board/blob/main/packages/tool/README.md)
 
 ### @go-board/ui
 

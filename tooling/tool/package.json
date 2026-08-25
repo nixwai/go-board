@@ -1,5 +1,5 @@
 {
-  "name": "@go-board/build-utils",
+  "name": "@go-board/build-tool",
   "type": "module",
   "version": "0.0.1"
 }

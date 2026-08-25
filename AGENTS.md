@@ -6,8 +6,9 @@ Go Board 是一个基于 Vue 3 和 TypeScript 的围棋棋盘组件库，使用 
 
 ## 项目结构
 
-- `packages/components`：Vue 组件包 `@go-board/design`。
-- `packages/utils`：工具包 `@go-board/tool`。
+- `packages/design`：Vue 组件包 `@go-board/design`。
+- `packages/tool`：工具包 `@go-board/tool`。
+- `packages/ui`：UI 组件包 `@go-board/ui`。
 - `tooling`：组件包和工具包的构建、版本发布与发布工具。
 - `playground`：基于 Vite 的本地组件预览应用。
 - `dist`：构建生成目录，不提交到版本库。
@@ -53,7 +54,7 @@ pnpm play:dev
 
 ## 组件开发约定
 
-- 组件按功能拆分到 `packages/components/src/<component>` 目录。
+- 组件按功能拆分到 `packages/design/src/<component>` 目录。
 - 组件目录通常包含：
   - `src/<component>.ts`：Props 等类型定义。
   - `src/<component>.vue`：组件实现。
@@ -79,9 +80,9 @@ pnpm play:dev
 
 ## 工具函数开发约定
 
-- 每个工具函数使用独立目录，例如 `packages/utils/src/formatKey`。
+- 每个工具函数使用独立目录，例如 `packages/tool/src/formatKey`。
 - 在功能目录的 `index.ts` 中实现并导出函数。
-- 在 `packages/utils/src/index.ts` 中汇总公开导出。
+- 在 `packages/tool/src/index.ts` 中汇总公开导出。
 - 使用 Vitest 编写与工具函数行为对应的测试，测试文件与实现放在同一功能目录。
 - 测试应覆盖正常输入、边界输入和错误或异常输入（当该函数存在对应行为时）。
 

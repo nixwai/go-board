@@ -1,5 +1,5 @@
 import { series } from 'gulp';
-import { version } from '../../packages/utils/package.json';
+import { version } from '../../packages/tool/package.json';
 import { delPath, publishTask, releaseTask, runBuildCommand, runBuildSteps } from '../common/tasks';
 import { toolOutput, toolRoot } from './paths';
 

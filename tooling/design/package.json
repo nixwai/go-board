@@ -1,5 +1,5 @@
 {
-  "name": "@go-board/build-components",
+  "name": "@go-board/build-ui",
   "type": "module",
   "version": "0.0.1",
   "devDependencies": {
