@@ -7,7 +7,7 @@ import type {
   GoBoardUpdateEvent,
 } from './go-board';
 
-import { GoGame } from '@go-board/tool';
+import { GoGame, normalizePosition } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -29,6 +29,7 @@ const boardSize = ref(goGame.size);
 const rows = ref(goGame.layout);
 const player = ref(goGame.player);
 const hoverPosition = ref<string>();
+const lastMovePosition = ref<string>();
 
 /** 通知外部当前布局和下一手执棋方。 */
 function emitUpdate() {
@@ -58,8 +59,10 @@ function refresh() {
 /** 处理外部或单元点击触发的落子流程。 */
 function play(position?: string): boolean {
   if (position?.trim()) {
-    if (!goGame.play(position)) { return false; }
-    emitMove(position);
+    const normalizedPosition = normalizePosition(position);
+    if (!normalizedPosition || !goGame.play(normalizedPosition)) { return false; }
+    lastMovePosition.value = normalizedPosition;
+    emitMove(normalizedPosition);
   }
   emitUpdate();
   goGame.rotate();
@@ -70,6 +73,7 @@ function play(position?: string): boolean {
 /** 重置对局并同步更新后的棋盘状态。 */
 function reset(options?: GoGameOptions): boolean {
   if (!goGame.reset(options)) { return false; }
+  lastMovePosition.value = undefined;
   refresh();
   emitUpdate();
   return true;
@@ -108,6 +112,7 @@ defineExpose<GoBoardExposed>({ play, reset });
         <ChessPiece
           v-if="sign"
           :sign="sign"
+          :marked="lastMovePosition === position"
         />
         <ChessPiece
           v-else-if="hoverPosition === position"
