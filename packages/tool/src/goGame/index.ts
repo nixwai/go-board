@@ -89,6 +89,7 @@ export class GoGame {
       this.board = this.board.makeMove(this.current, vertex, {
         preventOverwrite: true,
         preventSuicide: true,
+        preventKo: true,
       });
     }
     catch {
@@ -131,6 +132,6 @@ export class GoGame {
     if (this.board.get(vertex) !== 0) { return false; }
 
     const analysis = this.board.analyzeMove(this.current, vertex);
-    return !analysis.pass && !analysis.overwrite && !analysis.suicide;
+    return !analysis.pass && !analysis.overwrite && !analysis.suicide && !analysis.ko;
   }
 }

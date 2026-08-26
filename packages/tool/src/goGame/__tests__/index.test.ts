@@ -35,6 +35,34 @@ describe('goGame', () => {
     expect(game.getSign('B2')).toBe(0);
   });
 
+  it('rejects immediate ko recapture and allows recapture after an intervening move', () => {
+    const game = new GoGame({
+      size: 5,
+      player: -1,
+      layout: [
+        [0, 1, -1, 0, 0],
+        [1, 0, 1, -1, 0],
+        [0, 1, -1, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+    });
+
+    expect(game.play('B4')).toBe(true);
+    game.rotate();
+
+    expect(game.isLegal('C4')).toBe(false);
+    expect(game.play('C4')).toBe(false);
+    expect(game.player).toBe(1);
+    expect(game.getSign('B4')).toBe(-1);
+    expect(game.getSign('C4')).toBe(0);
+
+    expect(game.play('A1')).toBe(true);
+    game.rotate();
+    expect(game.isLegal('C4')).toBe(true);
+    expect(game.play('C4')).toBe(true);
+  });
+
   it('captures stones and rejects suicide', () => {
     const captureGame = new GoGame({
       size: 3,
