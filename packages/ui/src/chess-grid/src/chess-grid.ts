@@ -2,6 +2,8 @@
 export interface ChessGridProps {
   /** 按行保存的棋子标记。 */
   rows: (0 | 1 | -1)[][]
+  /** 是否禁用交互。 */
+  disabled?: boolean
 }
 
 /** 棋盘网格默认作用域插槽接收的数据。 */

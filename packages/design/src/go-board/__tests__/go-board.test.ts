@@ -129,6 +129,21 @@ describe('goBoard', () => {
     expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
   });
 
+  it('disables board cells and suppresses mouse interactions when disabled', async () => {
+    const wrapper = mount(GoBoard, { props: { disabled: true, init: { size: 3 } } });
+
+    expect(wrapper.findAll('.chess-grid-cell').every(cell => cell.attributes('disabled') !== undefined)).toBe(true);
+
+    const cell = wrapper.find('[aria-label="A1"]');
+    await cell.trigger('mouseenter');
+    await cell.trigger('click');
+
+    expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
+    expect(wrapper.find('.chess-piece-stone').exists()).toBe(false);
+    expect(wrapper.emitted('move')).toBeUndefined();
+    expect(wrapper.emitted('update')).toBeUndefined();
+  });
+
   it('plays a move from a mouse click', async () => {
     const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
 

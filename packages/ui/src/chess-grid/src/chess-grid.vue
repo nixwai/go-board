@@ -32,11 +32,13 @@ function getPosition(x: number, y: number): string {
 
 /** 转发单元鼠标进入事件，并附带标准化棋盘坐标。 */
 function handleMouseenter(x: number, y: number) {
+  if (props.disabled) { return; }
   emit('cellMouseenter', getPosition(x, y));
 }
 
 /** 转发单元点击事件，并附带标准化棋盘坐标。 */
 function handleClick(x: number, y: number) {
+  if (props.disabled) { return; }
   emit('cellClick', getPosition(x, y));
 }
 </script>
@@ -50,6 +52,7 @@ function handleClick(x: number, y: number) {
         class="chess-grid-cell"
         type="button"
         role="gridcell"
+        :disabled="props.disabled"
         :aria-label="getPosition(x, y)"
         :aria-pressed="sign !== 0"
         @mouseenter="handleMouseenter(x, y)"

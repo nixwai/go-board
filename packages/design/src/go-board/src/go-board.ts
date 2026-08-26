@@ -16,6 +16,8 @@ export interface GoBoardMoveEvent extends GoBoardUpdateEvent {
 
 /** 围棋棋盘组件的输入属性。 */
 export interface GoBoardProps {
+  /** 是否禁用交互。 */
+  disabled?: boolean
   /** 棋盘容器宽度。 */
   width?: number | string
   /** 棋盘初始化配置。 */

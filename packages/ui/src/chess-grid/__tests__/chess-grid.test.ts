@@ -50,6 +50,19 @@ describe('chessGrid', () => {
     expect(wrapper.find('.chess-grid').attributes('data-testid')).toBe('chess-grid');
   });
 
+  it('disables cells and suppresses interactions when disabled', async () => {
+    const wrapper = mount(ChessGrid, { props: { rows: [[0, 0]], disabled: true } });
+
+    expect(wrapper.findAll('.chess-grid-cell').every(cell => cell.attributes('disabled') !== undefined)).toBe(true);
+
+    const cell = wrapper.find('.chess-grid-cell');
+    await cell.trigger('mouseenter');
+    await cell.trigger('click');
+
+    expect(wrapper.emitted('cellMouseenter')).toBeUndefined();
+    expect(wrapper.emitted('cellClick')).toBeUndefined();
+  });
+
   it('emits cell interactions with the cell position', async () => {
     const wrapper = mount(ChessGrid, { props: { rows: [[0]] } });
 

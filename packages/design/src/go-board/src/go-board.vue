@@ -13,7 +13,10 @@ import { ref } from 'vue';
 
 defineOptions({ name: 'GoBoard' });
 
-const props = withDefaults(defineProps<GoBoardProps>(), { width: '100%' });
+const props = withDefaults(defineProps<GoBoardProps>(), {
+  disabled: false,
+  width: '100%',
+});
 
 const emit = defineEmits<{
   update: [payload: GoBoardUpdateEvent]
@@ -97,6 +100,7 @@ defineExpose<GoBoardExposed>({ play, reset });
   >
     <ChessGrid
       :rows="rows"
+      :disabled="props.disabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
     >
