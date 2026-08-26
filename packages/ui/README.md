@@ -209,7 +209,7 @@ const rows: ChessSign[][] = [
 
 ### ChessPiece
 
-棋子组件。根据 `sign` 渲染黑棋或白棋，并支持使用半透明预览样式显示待落子棋子。
+棋子组件。根据 `sign` 渲染黑棋或白棋，并支持使用半透明预览样式显示待落子棋子和标记最近一手棋子。
 
 #### 基础用法
 
@@ -222,6 +222,7 @@ import { ChessPiece } from '@go-board/ui';
   <ChessPiece :sign="1" />
   <ChessPiece :sign="-1" />
   <ChessPiece :sign="1" preview />
+  <ChessPiece :sign="-1" marked />
 </template>
 ```
 
@@ -231,6 +232,7 @@ import { ChessPiece } from '@go-board/ui';
 | --- | --- | --- | --- |
 | `sign` | 棋子颜色；`1` 表示黑棋，`-1` 表示白棋 | `1 \| -1` | — |
 | `preview` | 是否以半透明预览样式显示 | `boolean` | `false` |
+| `marked` | 是否在棋子中心显示与棋子颜色相反的空心圆标记 | `boolean` | `false` |
 
 #### Slots
 

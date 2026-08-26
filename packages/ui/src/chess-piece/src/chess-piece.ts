@@ -4,4 +4,6 @@ export interface ChessPieceProps {
   sign: 1 | -1
   /** 是否以半透明预览样式显示。 */
   preview?: boolean
+  /** 是否在棋子中心显示空心圆标记。 */
+  marked?: boolean
 }

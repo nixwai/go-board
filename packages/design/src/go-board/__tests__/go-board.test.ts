@@ -79,8 +79,29 @@ describe('goBoard', () => {
     const moves = wrapper.emitted('move') ?? [];
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
-    expect(moves[0]?.[0]).toMatchObject({ position: 'a1', player: 1 });
+    expect(moves[0]?.[0]).toMatchObject({ position: 'A1', player: 1 });
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
+  });
+
+  it('marks only the latest played piece', async () => {
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
+    const api = exposed(wrapper);
+
+    expect(wrapper.find('.chess-piece-stone-marked').exists()).toBe(false);
+    expect(api.play('a1')).toBe(true);
+    await nextTick();
+    expect(wrapper.find('[aria-label="A1"] .chess-piece-stone-marked').exists()).toBe(true);
+
+    expect(api.play('B2')).toBe(true);
+    await nextTick();
+    expect(wrapper.find('[aria-label="A1"] .chess-piece-stone-marked').exists()).toBe(false);
+    expect(wrapper.find('[aria-label="B2"] .chess-piece-stone-marked').exists()).toBe(true);
+    expect(wrapper.findAll('.chess-piece-stone-marked')).toHaveLength(1);
+
+    expect(api.play('B2')).toBe(false);
+    expect(api.play()).toBe(true);
+    await nextTick();
+    expect(wrapper.find('[aria-label="B2"] .chess-piece-stone-marked').exists()).toBe(true);
   });
 
   it('rejects occupied and invalid positions without events', () => {
@@ -112,6 +133,7 @@ describe('goBoard', () => {
     await nextTick();
     expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(1);
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
+    expect(wrapper.find('.chess-piece-stone-marked').exists()).toBe(false);
     expect(api.reset({ size: 5 })).toBe(true);
     await nextTick();
     expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(25);
@@ -126,6 +148,11 @@ describe('goBoard', () => {
     await cell.trigger('mouseenter');
     expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(true);
     await wrapper.find('.chessboard').trigger('mouseleave');
+    expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
+
+    expect(exposed(wrapper).play('A1')).toBe(true);
+    await nextTick();
+    await cell.trigger('mouseenter');
     expect(wrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
   });
 
