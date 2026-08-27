@@ -18,9 +18,9 @@ yarn add @go-board/tool
 ## 基础使用
 
 ```ts
-import { GoGame } from '@go-board/tool';
+import { GoGameData } from '@go-board/tool';
 
-const game = new GoGame({ size: 9 });
+const game = new GoGameData({ size: 9 });
 
 game.play('D4');
 console.log(game.layout);
@@ -40,7 +40,7 @@ game.play('E4');
 | `MIN_SIZE` | `number` | 棋盘边长最小值，值为 `1`。 |
 | `MAX_SIZE` | `number` | 棋盘边长最大值，值为 `25`。 |
 
-## `GoGame`
+## `GoGameData`
 
 ### 构造参数 `GoGameOptions`
 
@@ -81,9 +81,9 @@ interface GoGameOptions {
 ### 示例：初始化棋局
 
 ```ts
-import { GoGame } from '@go-board/tool';
+import { GoGameData } from '@go-board/tool';
 
-const game = new GoGame({
+const game = new GoGameData({
   size: 5,
   player: -1,
   layout: [
@@ -111,7 +111,7 @@ if (game.isLegal('C3')) {
 | --- | --- | --- | --- |
 | `cloneLayout` | `layout: GoLayout` | `GoLayout` | 深拷贝棋盘布局，避免直接修改原二维数组。 |
 | `createLayout` | `size: number` | `GoLayout` | 创建指定边长的空棋盘布局。 |
-| `createBoardData` | `layout: GoLayout` | `GoBoard` | 根据棋盘布局创建 `GoBoard` 规则引擎实例。传入布局会先被复制。 |
+| `createBoardData` | `layout: GoLayout` | `GoBoardData` | 根据棋盘布局创建 `GoBoardData` 规则引擎实例。传入布局会先被复制。 |
 
 ```ts
 import { createLayout, cloneLayout, createBoardData } from '@go-board/tool';
@@ -164,7 +164,7 @@ isValidLayout(layout, 2); // true
 | `GoVertex` | 棋盘顶点坐标，类型为 `[number, number]`。 |
 | `GoGamePosition` | 落子位置：文本坐标或 `GoVertex`。 |
 | `PlayerSign` | 执棋方：`-1 \| 1`。 |
-| `GoGameOptions` | `GoGame` 的初始化和重置配置。 |
+| `GoGameOptions` | `GoGameData` 的初始化和重置配置。 |
 
 ## License
 

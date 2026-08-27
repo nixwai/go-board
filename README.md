@@ -1,4 +1,4 @@
-﻿# Go Board
+# Go Board
 
 基于 Vue 3 和 TypeScript 的围棋棋盘组件库，当前公开提供 `GoBoard` 组件，并 re-export `@go-board/tool` 的围棋规则类型与工具。
 
@@ -135,7 +135,7 @@ function handleUpdate(event: GoBoardUpdateEvent) {
 
 ### GoBoard
 
-围棋棋盘组件，负责棋盘展示和基于 `GoGame` 规则引擎的落子交互。组件内部组合基础棋盘 UI，但基础 UI 组件不是 `@go-board/design` 的公开组件。
+围棋棋盘组件，负责棋盘展示和基于 `GoGameData` 规则引擎的落子交互。组件内部组合基础棋盘 UI，但基础 UI 组件不是 `@go-board/design` 的公开组件。
 
 #### Props
 

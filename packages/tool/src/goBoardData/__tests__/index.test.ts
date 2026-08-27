@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { GoBoard } from '../index';
+import { GoBoardData } from '../index';
 
-describe('goBoard', () => {
+describe('goBoardData', () => {
   it('clones the initial layout and exposes board dimensions', () => {
     const layout = [
       [1, 0, -1],
       [0, 1, 0],
     ] as const;
-    const rule = new GoBoard(layout.map(row => [...row]));
+    const rule = new GoBoardData(layout.map(row => [...row]));
 
     expect(rule.width).toBe(3);
     expect(rule.height).toBe(2);
@@ -16,13 +16,13 @@ describe('goBoard', () => {
     expect(rule.layout[0]).not.toBe(layout[0]);
 
     const source = [[1, 0], [0, -1]] as const;
-    const isolated = new GoBoard(source.map(row => [...row]));
+    const isolated = new GoBoardData(source.map(row => [...row]));
     isolated.layout[0]![0] = 0;
     expect(isolated.get([0, 0])).toBe(1);
   });
 
   it('finds neighboring stones, chains, and distinct liberties', () => {
-    const rule = new GoBoard([
+    const rule = new GoBoardData([
       [0, 0, 0, 0],
       [0, 1, 1, 0],
       [0, 1, 0, 0],
@@ -45,7 +45,7 @@ describe('goBoard', () => {
   });
 
   it('makes immutable moves, removes captured chains, and counts captures', () => {
-    const rule = new GoBoard([
+    const rule = new GoBoardData([
       [0, 1, 0],
       [1, -1, 1],
       [0, 1, 0],
@@ -58,7 +58,7 @@ describe('goBoard', () => {
     expect(next.get([1, 1])).toBe(-1);
     expect(next.getCaptures(1)).toBe(0);
 
-    const capture = new GoBoard([
+    const capture = new GoBoardData([
       [1, -1, 0],
       [0, 1, 0],
       [0, 0, 0],
@@ -67,7 +67,7 @@ describe('goBoard', () => {
     expect(capture.get([1, 0])).toBe(0);
     expect(capture.getCaptures(1)).toBe(1);
 
-    const doubleCapture = new GoBoard([
+    const doubleCapture = new GoBoardData([
       [1, -1, 1],
       [-1, 0, 1],
       [1, 1, 0],
@@ -79,7 +79,7 @@ describe('goBoard', () => {
   });
 
   it('detects suicide and ko without mutating the board', () => {
-    const suicide = new GoBoard([
+    const suicide = new GoBoardData([
       [0, 1, 0],
       [1, 0, 1],
       [0, 1, 0],
@@ -95,7 +95,7 @@ describe('goBoard', () => {
     expect(suicide.get([1, 1])).toBe(0);
     expect(() => suicide.makeMove(-1, [1, 1], { preventSuicide: true })).toThrow('Suicide prevented');
 
-    const ko = new GoBoard([
+    const ko = new GoBoardData([
       [0, 1, -1, 0, 0],
       [1, 0, 1, -1, 0],
       [0, 1, -1, 0, 0],
@@ -108,14 +108,14 @@ describe('goBoard', () => {
   });
 
   it('validates live chains', () => {
-    const rule = new GoBoard([
+    const rule = new GoBoardData([
       [1, 0, 0],
       [0, -1, 0],
       [0, 0, 0],
     ]);
 
     expect(rule.isValid()).toBe(true);
-    expect(new GoBoard([
+    expect(new GoBoardData([
       [1, -1],
       [-1, 1],
     ]).isValid()).toBe(false);

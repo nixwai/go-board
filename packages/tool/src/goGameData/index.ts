@@ -1,19 +1,18 @@
 import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, PlayerSign } from '../types';
 import { createLayout } from '../create';
-import { GoBoard } from '../goBoard';
+import { GoBoardData } from '../goBoardData';
 import { normalizePlayer, normalizeSize, normalizeVertex } from '../normalize';
 import { isValidLayout } from '../verify';
 
 /** 基于围棋规则引擎的轻量对局状态管理器。 */
-export class GoGame {
+export class GoGameData {
   /** 当前棋盘尺寸。 */
   private boardSize!: number;
   /** 当前规则引擎棋盘数据。 */
-  private board!: GoBoard;
+  private boardData!: GoBoardData;
   /** 当前执棋方。 */
   private current!: PlayerSign;
-
-  /** 最近一次有效配置，用于无参数重置。 */
+  /** 缓存最近一次有效配置，用于重置。 */
   private cachedOptions?: GoGameOptions;
 
   /** 使用给定配置创建对局；无效配置时回退为空棋盘。 */
@@ -22,6 +21,11 @@ export class GoGame {
       this.clear(options?.size);
       this.updateCached();
     }
+  }
+
+  /** 拷贝获取当前对局棋盘状态。 */
+  get board(): GoBoardData {
+    return this.boardData.clone();
   }
 
   /** 返回当前棋盘尺寸。 */
@@ -36,7 +40,7 @@ export class GoGame {
 
   /** 返回当前棋盘布局的副本。 */
   get layout(): GoLayout {
-    return this.board.layout;
+    return this.boardData.layout;
   }
 
   /** 返回包含尺寸、布局和执棋方的完整对局快照。 */
@@ -61,13 +65,13 @@ export class GoGame {
     }
 
     const layout = options?.layout || createLayout(size);
-    const candidate = new GoBoard(layout);
+    const candidate = new GoBoardData(layout);
     if (!candidate.isValid()) {
       return false;
     }
 
     this.boardSize = size;
-    this.board = candidate;
+    this.boardData = candidate;
     this.current = normalizePlayer(options?.player);
     this.updateCached();
     return true;
@@ -76,7 +80,7 @@ export class GoGame {
   /** 清空棋盘，并设置新的尺寸和执棋方。 */
   clear(size?: number | string, next?: PlayerSign): void {
     this.boardSize = normalizeSize(size ?? this.boardSize);
-    this.board = new GoBoard(createLayout(this.boardSize));
+    this.boardData = new GoBoardData(createLayout(this.boardSize));
     this.current = normalizePlayer(next);
   }
 
@@ -91,7 +95,7 @@ export class GoGame {
       if (player) {
         this.current = normalizePlayer(player);
       }
-      this.board = this.board.makeMove(this.current, vertex, {
+      this.boardData = this.boardData.makeMove(this.current, vertex, {
         preventOverwrite: true,
         preventSuicide: true,
         preventKo: true,
@@ -111,7 +115,7 @@ export class GoGame {
   /** 获取指定位置的棋子标记。 */
   getSign(position: GoGamePosition): GoSign | undefined {
     const vertex = this.toVertex(position);
-    return vertex ? this.board.get(vertex) as GoSign : undefined;
+    return vertex ? this.boardData.get(vertex) as GoSign : undefined;
   }
 
   /** 判断指定位置对当前执棋方是否为合法落点。 */
@@ -122,8 +126,8 @@ export class GoGame {
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */
   private toVertex(position: GoGamePosition): GoVertex | null {
-    const vertex = normalizeVertex(position, this.board.widLen);
-    return vertex && this.board.has(vertex) ? vertex : null;
+    const vertex = normalizeVertex(position, this.boardData.widLen);
+    return vertex && this.boardData.has(vertex) ? vertex : null;
   }
 
   /** 使用规则引擎分析顶点，排除占用、提子、自杀和打劫落点。 */
@@ -132,11 +136,11 @@ export class GoGame {
       return false;
     }
 
-    if (this.board.get(vertex) !== 0) {
+    if (this.boardData.get(vertex) !== 0) {
       return false;
     }
 
-    const analysis = this.board.analyzeMove(this.current, vertex);
+    const analysis = this.boardData.analyzeMove(this.current, vertex);
     return !analysis.pass && !analysis.overwrite && !analysis.suicide && !analysis.ko;
   }
 }

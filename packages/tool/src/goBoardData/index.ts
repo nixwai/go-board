@@ -12,7 +12,7 @@ function vertexKey(vertex: GoVertex): string {
  *
  * 每次落子都基于当前布局创建新实例，原实例及其布局不会被修改。
  */
-export class GoBoard {
+export class GoBoardData {
   /** 当前实例内部持有的棋盘布局。 */
   private readonly layoutInfo: GoLayout;
   /** 棋盘行数。 */
@@ -67,7 +67,7 @@ export class GoBoard {
   }
 
   /** 按围棋规则生成落子后的新棋盘实例。 */
-  makeMove(sign: GoSign, vertex: GoVertex, options: GoMoveOptions = {}): GoBoard {
+  makeMove(sign: GoSign, vertex: GoVertex, options: GoMoveOptions = {}): GoBoardData {
     if (sign === 0 || !this.has(vertex)) {
       return this.clone();
     }
@@ -255,6 +255,14 @@ export class GoBoard {
     return this.getLiberties(vertex).length > 0;
   }
 
+  clone(): GoBoardData {
+    const result = new GoBoardData(this.layoutInfo);
+    result.captures[1] = this.captures[1];
+    result.captures[-1] = this.captures[-1];
+    result.koInfo = { sign: this.koInfo.sign, vertex: [...this.koInfo.vertex] };
+    return result;
+  }
+
   private set(vertex: GoVertex, sign: GoSign): void {
     if (this.has(vertex)) {
       this.layoutInfo[vertex[1]]![vertex[0]] = sign;
@@ -263,13 +271,5 @@ export class GoBoard {
 
   private setCaptures(sign: Exclude<GoSign, 0>, mutator: (count: number) => number): void {
     this.captures[sign] = mutator(this.captures[sign]);
-  }
-
-  private clone(): GoBoard {
-    const result = new GoBoard(this.layoutInfo);
-    result.captures[1] = this.captures[1];
-    result.captures[-1] = this.captures[-1];
-    result.koInfo = { sign: this.koInfo.sign, vertex: [...this.koInfo.vertex] };
-    return result;
   }
 }
