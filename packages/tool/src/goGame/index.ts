@@ -1,17 +1,15 @@
-import type GoBoardData from '@sabaki/go-board';
 import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, PlayerSign } from '../types';
-import { cloneLayout, createBoardData, createLayout } from '../create';
-import { normalizePlayer, normalizePosition, normalizeSize } from '../normalize';
+import { createLayout } from '../create';
+import { GoBoard } from '../goBoard';
+import { normalizePlayer, normalizeSize, normalizeVertex } from '../normalize';
 import { isValidLayout } from '../verify';
 
-type BoardData = InstanceType<typeof GoBoardData>;
-
-/** 基于 sabaki 围棋规则引擎的轻量对局状态管理器。 */
+/** 基于围棋规则引擎的轻量对局状态管理器。 */
 export class GoGame {
   /** 当前棋盘尺寸。 */
   private boardSize!: number;
   /** 当前规则引擎棋盘数据。 */
-  private board!: BoardData;
+  private board!: GoBoard;
   /** 当前执棋方。 */
   private current!: PlayerSign;
 
@@ -22,7 +20,7 @@ export class GoGame {
   constructor(options?: GoGameOptions) {
     if (!this.reset(options)) {
       this.clear(options?.size);
-      this.cachedOptions = this.snapshot;
+      this.updateCached();
     }
   }
 
@@ -38,7 +36,7 @@ export class GoGame {
 
   /** 返回当前棋盘布局的副本。 */
   get layout(): GoLayout {
-    return cloneLayout(this.board.signMap);
+    return this.board.layout;
   }
 
   /** 返回包含尺寸、布局和执棋方的完整对局快照。 */
@@ -50,28 +48,35 @@ export class GoGame {
     };
   }
 
-  /** 按配置重置对局，配置或规则校验失败时保持原状态。 */
+  private updateCached() {
+    this.cachedOptions = this.snapshot;
+  }
+
+  /** 按配置重置对局，C配置或规则校验失败时保持原状态。 */
   reset(options?: GoGameOptions): boolean {
     const newOptions = options || this.cachedOptions;
     const size = normalizeSize(newOptions?.size ?? this.boardSize);
-    if (options?.layout && !isValidLayout(options.layout, size)) { return false; }
+    if (options?.layout && !isValidLayout(options.layout, size)) {
+      return false;
+    }
 
-    const signMap = options?.layout || createLayout(size);
-    const candidate = createBoardData(signMap);
-    if (!candidate.isValid()) { return false; }
+    const layout = options?.layout || createLayout(size);
+    const candidate = new GoBoard(layout);
+    if (!candidate.isValid()) {
+      return false;
+    }
 
     this.boardSize = size;
     this.board = candidate;
     this.current = normalizePlayer(options?.player);
-    this.cachedOptions = this.snapshot;
+    this.updateCached();
     return true;
   }
 
   /** 清空棋盘，并设置新的尺寸和执棋方。 */
-  clear(size?: number | string, next?: PlayerSign) {
+  clear(size?: number | string, next?: PlayerSign): void {
     this.boardSize = normalizeSize(size ?? this.boardSize);
-    const signMap = createLayout(this.boardSize);
-    this.board = createBoardData(signMap);
+    this.board = new GoBoard(createLayout(this.boardSize));
     this.current = normalizePlayer(next);
   }
 
@@ -99,7 +104,7 @@ export class GoGame {
   }
 
   /** 切换到另一方执棋。 */
-  rotate() {
+  rotate(): void {
     this.current = -this.current as PlayerSign;
   }
 
@@ -117,19 +122,19 @@ export class GoGame {
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */
   private toVertex(position: GoGamePosition): GoVertex | null {
-    if (typeof position === 'string') {
-      const normalized = normalizePosition(position);
-      if (!normalized) { return null; }
-      position = this.board.parseVertex(normalized);
-    }
-    return this.board.has(position) ? position : null;
+    const vertex = normalizeVertex(position, this.board.widLen);
+    return vertex && this.board.has(vertex) ? vertex : null;
   }
 
-  /** 使用规则引擎分析顶点，排除占用、提子规则和自杀手。 */
+  /** 使用规则引擎分析顶点，排除占用、提子、自杀和打劫落点。 */
   private isLegalVertex(vertex?: GoVertex | null): boolean {
-    if (!vertex) { return false; }
+    if (!vertex) {
+      return false;
+    }
 
-    if (this.board.get(vertex) !== 0) { return false; }
+    if (this.board.get(vertex) !== 0) {
+      return false;
+    }
 
     const analysis = this.board.analyzeMove(this.current, vertex);
     return !analysis.pass && !analysis.overwrite && !analysis.suicide && !analysis.ko;

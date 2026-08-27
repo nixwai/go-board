@@ -1,6 +1,6 @@
 # @go-board/tool
 
-围棋棋局状态管理与棋盘数据工具，基于 `@sabaki/go-board` 实现。
+围棋棋局状态管理与棋盘数据工具
 
 ## 安装
 
@@ -109,9 +109,9 @@ if (game.isLegal('C3')) {
 
 | 函数 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `cloneLayout` | `signMap: GoLayout` | `GoLayout` | 深拷贝棋盘布局，避免直接修改原二维数组。 |
+| `cloneLayout` | `layout: GoLayout` | `GoLayout` | 深拷贝棋盘布局，避免直接修改原二维数组。 |
 | `createLayout` | `size: number` | `GoLayout` | 创建指定边长的空棋盘布局。 |
-| `createBoardData` | `signMap: GoLayout` | `GoBoardData` | 根据棋盘布局创建 `@sabaki/go-board` 规则引擎实例。传入布局会先被复制。 |
+| `createBoardData` | `layout: GoLayout` | `GoBoard` | 根据棋盘布局创建 `GoBoard` 规则引擎实例。传入布局会先被复制。 |
 
 ```ts
 import { createLayout, cloneLayout, createBoardData } from '@go-board/tool';
@@ -142,7 +142,7 @@ normalizePosition('I4'); // null
 
 | 函数 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `isValidLayout` | `signMap: GoLayout \| undefined`<br>`size: number` | `boolean` | 校验布局是否为 `size × size` 的二维数组，且每个棋子标记只能是 `-1`、`0` 或 `1`。 |
+| `isValidLayout` | `layout: GoLayout \| undefined`<br>`size: number` | `boolean` | 校验布局是否为 `size × size` 的二维数组，且每个棋子标记只能是 `-1`、`0` 或 `1`。 |
 
 ```ts
 import { isValidLayout } from '@go-board/tool';

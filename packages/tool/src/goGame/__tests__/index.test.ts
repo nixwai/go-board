@@ -24,6 +24,19 @@ describe('goGame', () => {
     expect(game.play('D4')).toBe(false);
   });
 
+  it('converts Go coordinates inside the game input boundary', () => {
+    const game = new GoGame({ size: 3 });
+
+    expect(game.play('a3')).toBe(true);
+    expect(game.getSign('A3')).toBe(1);
+
+    game.rotate();
+    expect(game.play('C1')).toBe(true);
+    expect(game.getSign('C1')).toBe(-1);
+    expect(game.isLegal('A0')).toBe(false);
+    expect(game.getSign('I1')).toBeUndefined();
+  });
+
   it('returns cloned layouts and restores the last valid reset', () => {
     const game = new GoGame({ size: 3 });
     const layout = game.layout;

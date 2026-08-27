@@ -21,8 +21,5 @@
   "types": "dist/types/index.d.ts",
   "files": [
     "dist"
-  ],
-  "dependencies": {
-    "@sabaki/go-board": "^1.4.3"
-  }
+  ]
 }
