@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { GoGameOptions } from '@go-board/tool';
-import type {
-  GoBoardExposed,
-  GoBoardMoveEvent,
-  GoBoardProps,
-  GoBoardUpdateEvent,
-} from './go-board';
+import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, normalizePosition } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
@@ -19,56 +14,50 @@ const props = withDefaults(defineProps<GoBoardProps>(), {
 });
 
 const emit = defineEmits<{
-  update: [payload: GoBoardUpdateEvent]
-  move: [payload: GoBoardMoveEvent]
+  update: [payload: GoBoardEvent]
+  move: [payload: GoBoardEvent]
 }>();
 
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
-const boardSize = ref(goGameData.size);
-const rows = ref(goGameData.layout);
-const player = ref(goGameData.player);
+const gameOptions = ref<Required<GoGameOptions>>(goGameData.snapshot);
 const hoverPosition = ref<string>();
 const lastMovePosition = ref<string>();
 
-/** 通知外部当前布局和下一手执棋方。 */
-function emitUpdate() {
-  emit('update', {
-    layout: goGameData.layout,
-    player: goGameData.player,
-    ko: goGameData.ko,
-  });
+/** 创建包含当前对局快照和可选落子位置的事件数据。 */
+function createEvent(position?: string): GoBoardEvent {
+  return { ...goGameData.snapshot, position };
+}
+
+function emitUpdate(position?: string) {
+  emit('update', createEvent(position));
 }
 
 /** 通知外部本次落子位置及落子后的棋盘快照。 */
 function emitMove(position: string) {
-  emit('move', {
-    layout: goGameData.layout,
-    player: goGameData.player,
-    ko: goGameData.ko,
-    position,
-  });
+  emit('move', createEvent(position));
 }
 
-/** 将规则引擎状态同步到组件响应式状态。 */
+/** 将规则引擎快照同步到组件响应式状态。 */
 function refresh() {
-  boardSize.value = goGameData.size;
-  rows.value = goGameData.layout;
-  player.value = goGameData.player;
+  gameOptions.value = goGameData.snapshot;
   hoverPosition.value = undefined;
 }
 
 /** 处理外部或单元点击触发的落子流程。 */
 function play(position?: string): boolean {
+  let normalizedPosition: string | undefined;
   if (position?.trim()) {
-    const normalizedPosition = normalizePosition(position);
+    normalizedPosition = normalizePosition(position) ?? undefined;
     if (!normalizedPosition || !goGameData.play(normalizedPosition)) { return false; }
     lastMovePosition.value = normalizedPosition;
-    emitMove(normalizedPosition);
   }
   goGameData.rotate();
   refresh();
-  emitUpdate();
+  if (normalizedPosition) {
+    emitMove(normalizedPosition);
+  }
+  emitUpdate(normalizedPosition);
   return true;
 }
 
@@ -97,15 +86,15 @@ defineExpose<GoBoardExposed>({ play, reset });
 
 <template>
   <Chessboard
-    :size="boardSize"
+    :size="gameOptions.size"
     :width="props.width"
     role="grid"
-    :aria-rowcount="boardSize"
-    :aria-colcount="boardSize"
+    :aria-rowcount="gameOptions.size"
+    :aria-colcount="gameOptions.size"
     @mouseleave="clearHover"
   >
     <ChessGrid
-      :rows="rows"
+      :rows="gameOptions.layout"
       :disabled="props.disabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
@@ -118,7 +107,7 @@ defineExpose<GoBoardExposed>({ play, reset });
         />
         <ChessPiece
           v-else-if="hoverPosition === position"
-          :sign="player"
+          :sign="gameOptions.player"
           preview
         />
       </template>

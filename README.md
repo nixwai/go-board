@@ -77,7 +77,6 @@ import { GoBoard } from '@go-board/design';
 import type {
   GoBoardInstance,
   GoBoardMoveEvent,
-  GoBoardUpdateEvent,
 } from '@go-board/design';
 
 import { GoBoard } from '@go-board/design';
@@ -108,7 +107,7 @@ function handleMove(event: GoBoardMoveEvent) {
   console.log('事件发出时的执棋方：', event.player);
 }
 
-function handleUpdate(event: GoBoardUpdateEvent) {
+function handleUpdate(event: GoBoardMoveEvent) {
   console.log('棋盘已更新：', event.layout, event.player);
 }
 </script>
@@ -195,23 +194,17 @@ const init = {
 | 事件 | 参数 | 说明 |
 | --- | --- | --- |
 | `move` | `GoBoardMoveEvent` | 合法落子后触发，包含本次落子坐标和落子后的棋盘布局。 |
-| `update` | `GoBoardUpdateEvent` | 棋盘状态更新后触发；调用 `play()` 停一手时也会触发。 |
+| `update` | `GoBoardMoveEvent` | 棋盘状态更新后触发；调用 `play()` 停一手时也会触发。 |
 
 ```ts
-interface GoBoardUpdateEvent {
-  layout: GoLayout;
-  player: PlayerSign;
-  ko: KoInfo;
-}
-
-interface GoBoardMoveEvent extends GoBoardUpdateEvent {
-  position: string;
+interface GoBoardMoveEvent extends Required<GoGameOptions> {
+  position?: string;
 }
 ```
 
 坐标使用文本坐标，例如 `A1`、`D4`。坐标会自动去除首尾空格并转为大写；字母 `I` 不参与坐标编号。
 
-事件中的 `layout` 是事件触发时的棋盘布局快照，`player` 是事件发出时规则引擎记录的执棋方，`ko` 是当前劫子信息。组件会在 `move` 和 `update` 事件发出后切换内部执棋方。
+事件参数基于完整的 `GoGameOptions` 快照；`position` 为本次落子坐标，停一手或重置触发的 `update` 事件中该字段为空。
 
 非法坐标、已有棋子的位置和自杀手不会触发事件。
 

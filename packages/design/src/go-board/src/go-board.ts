@@ -1,19 +1,9 @@
-import type { GoGameOptions, GoLayout, KoInfo, PlayerSign } from '@go-board/tool';
+import type { GoGameOptions } from '@go-board/tool';
 
-/** 棋盘状态更新事件的数据结构。 */
-export interface GoBoardUpdateEvent {
-  /** 更新后的棋盘布局。 */
-  layout: GoLayout
-  /** 下一手棋的执棋方。 */
-  player: PlayerSign
-  /** 当前劫子信息。 */
-  ko: KoInfo
-}
-
-/** 落子事件的数据结构。 */
-export interface GoBoardMoveEvent extends GoBoardUpdateEvent {
-  /** 本次落子的棋盘坐标。 */
-  position: string
+/** 棋盘状态事件的数据结构。 */
+export interface GoBoardEvent extends Required<GoGameOptions> {
+  /** 本次落子的棋盘坐标；停一手或重置时为空。 */
+  position?: string
 }
 
 /** 围棋棋盘组件的输入属性。 */

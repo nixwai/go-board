@@ -79,9 +79,15 @@ describe('goBoard', () => {
     const moves = wrapper.emitted('move') ?? [];
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
+    expect(updates[0]?.[0]).toMatchObject({
+      position: 'A1',
+      size: 3,
+      player: -1,
+      ko: { sign: 0, vertex: [-1, -1] },
+    });
     expect(moves[0]?.[0]).toMatchObject({
       position: 'A1',
-      player: 1,
+      player: -1,
       ko: { sign: 0, vertex: [-1, -1] },
     });
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
@@ -125,6 +131,7 @@ describe('goBoard', () => {
     const api = exposed(wrapper);
 
     expect(api.play()).toBe(true);
+    expect(wrapper.emitted('update')?.[0]?.[0]).toMatchObject({ position: undefined });
     expect(api.play('A1')).toBe(true);
     expect(api.reset()).toBe(true);
     await nextTick();

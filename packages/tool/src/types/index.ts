@@ -15,7 +15,7 @@ export interface GoGameOptions {
   /** 初始棋盘布局。 */
   layout?: GoLayout
   /** 初始执棋方。 */
-  player?: number
+  player?: PlayerSign
   /** 初始化劫子信息。 */
   ko?: KoInfo
 }

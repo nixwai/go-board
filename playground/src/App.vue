@@ -2,15 +2,15 @@
 import type {
   GoBoardInstance,
   GoBoardMoveEvent,
-  GoBoardUpdateEvent,
 } from '@go-board/design';
+import type { GoGameOptions } from '@go-board/tool';
 
 import { GoBoard } from '@go-board/design';
 import { ref } from 'vue';
 
 const boardRef = ref<GoBoardInstance>();
 
-const init = {
+const init: GoGameOptions = {
   size: 9,
   player: 1,
 };
@@ -33,7 +33,7 @@ function handleMove(event: GoBoardMoveEvent) {
   console.warn('事件发出时的执棋方：', event.player);
 }
 
-function handleUpdate(event: GoBoardUpdateEvent) {
+function handleUpdate(event: GoBoardMoveEvent) {
   console.warn('棋盘已更新：', event.layout, event.player);
 }
 </script>
