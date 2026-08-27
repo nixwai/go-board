@@ -1,6 +1,6 @@
 import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, PlayerSign } from '../types';
 import { createLayout } from '../create';
-import { GoBoardData } from '../goBoardData';
+import { GoBoardData } from '../go-board-data';
 import { normalizePlayer, normalizeSize, normalizeVertex } from '../normalize';
 import { isValidLayout } from '../verify';
 
