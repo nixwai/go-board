@@ -7,7 +7,7 @@ import type {
   GoBoardUpdateEvent,
 } from './go-board';
 
-import { GoGame, normalizePosition } from '@go-board/tool';
+import { GoGameData, normalizePosition } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -24,35 +24,35 @@ const emit = defineEmits<{
 }>();
 
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
-const goGame = new GoGame(props.init);
-const boardSize = ref(goGame.size);
-const rows = ref(goGame.layout);
-const player = ref(goGame.player);
+const goGameData = new GoGameData(props.init);
+const boardSize = ref(goGameData.size);
+const rows = ref(goGameData.layout);
+const player = ref(goGameData.player);
 const hoverPosition = ref<string>();
 const lastMovePosition = ref<string>();
 
 /** 通知外部当前布局和下一手执棋方。 */
 function emitUpdate() {
   emit('update', {
-    layout: goGame.layout,
-    player: goGame.player,
+    layout: goGameData.layout,
+    player: goGameData.player,
   });
 }
 
 /** 通知外部本次落子位置及落子后的棋盘快照。 */
 function emitMove(position: string) {
   emit('move', {
-    layout: goGame.layout,
-    player: goGame.player,
+    layout: goGameData.layout,
+    player: goGameData.player,
     position,
   });
 }
 
 /** 将规则引擎状态同步到组件响应式状态。 */
 function refresh() {
-  boardSize.value = goGame.size;
-  rows.value = goGame.layout;
-  player.value = goGame.player;
+  boardSize.value = goGameData.size;
+  rows.value = goGameData.layout;
+  player.value = goGameData.player;
   hoverPosition.value = undefined;
 }
 
@@ -60,19 +60,19 @@ function refresh() {
 function play(position?: string): boolean {
   if (position?.trim()) {
     const normalizedPosition = normalizePosition(position);
-    if (!normalizedPosition || !goGame.play(normalizedPosition)) { return false; }
+    if (!normalizedPosition || !goGameData.play(normalizedPosition)) { return false; }
     lastMovePosition.value = normalizedPosition;
     emitMove(normalizedPosition);
   }
   emitUpdate();
-  goGame.rotate();
+  goGameData.rotate();
   refresh();
   return true;
 }
 
 /** 重置对局并同步更新后的棋盘状态。 */
 function reset(options?: GoGameOptions): boolean {
-  if (!goGame.reset(options)) { return false; }
+  if (!goGameData.reset(options)) { return false; }
   lastMovePosition.value = undefined;
   refresh();
   emitUpdate();
@@ -81,7 +81,7 @@ function reset(options?: GoGameOptions): boolean {
 
 /** 仅在当前位置可合法落子时显示预览棋子。 */
 function setHover(position: string) {
-  hoverPosition.value = goGame.isLegal(position) ? position : undefined;
+  hoverPosition.value = goGameData.isLegal(position) ? position : undefined;
 }
 
 /** 离开棋盘时清除落子预览。 */
