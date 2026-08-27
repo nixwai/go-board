@@ -36,6 +36,7 @@ function emitUpdate() {
   emit('update', {
     layout: goGameData.layout,
     player: goGameData.player,
+    ko: goGameData.ko,
   });
 }
 
@@ -44,6 +45,7 @@ function emitMove(position: string) {
   emit('move', {
     layout: goGameData.layout,
     player: goGameData.player,
+    ko: goGameData.ko,
     position,
   });
 }
@@ -64,9 +66,9 @@ function play(position?: string): boolean {
     lastMovePosition.value = normalizedPosition;
     emitMove(normalizedPosition);
   }
-  emitUpdate();
   goGameData.rotate();
   refresh();
+  emitUpdate();
   return true;
 }
 

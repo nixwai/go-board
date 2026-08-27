@@ -79,7 +79,11 @@ describe('goBoard', () => {
     const moves = wrapper.emitted('move') ?? [];
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
-    expect(moves[0]?.[0]).toMatchObject({ position: 'A1', player: 1 });
+    expect(moves[0]?.[0]).toMatchObject({
+      position: 'A1',
+      player: 1,
+      ko: { sign: 0, vertex: [-1, -1] },
+    });
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
   });
 
@@ -177,6 +181,28 @@ describe('goBoard', () => {
     await wrapper.find('[aria-label="A1"]').trigger('click');
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
     expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ position: 'A1' });
+  });
+
+  it('applies initialized ko information', () => {
+    const wrapper = mount(GoBoard, {
+      props: {
+        init: {
+          size: 5,
+          player: 1,
+          layout: [
+            [0, 1, -1, 0, 0],
+            [1, -1, 0, -1, 0],
+            [0, 1, -1, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+          ],
+          ko: { sign: 1, vertex: [2, 1] },
+        },
+      },
+    });
+
+    expect(exposed(wrapper).play('C4')).toBe(false);
+    expect(wrapper.emitted('move')).toBeUndefined();
   });
 
   it('captures surrounded stones and rejects suicide', async () => {

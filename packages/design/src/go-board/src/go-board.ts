@@ -1,4 +1,4 @@
-import type { GoGameOptions, GoLayout, PlayerSign } from '@go-board/tool';
+import type { GoGameOptions, GoLayout, KoInfo, PlayerSign } from '@go-board/tool';
 
 /** 棋盘状态更新事件的数据结构。 */
 export interface GoBoardUpdateEvent {
@@ -6,6 +6,8 @@ export interface GoBoardUpdateEvent {
   layout: GoLayout
   /** 下一手棋的执棋方。 */
   player: PlayerSign
+  /** 当前劫子信息。 */
+  ko: KoInfo
 }
 
 /** 落子事件的数据结构。 */

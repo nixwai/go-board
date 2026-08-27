@@ -23,8 +23,8 @@ export class GoBoardData {
   private readonly captures: Record<Exclude<GoSign, 0>, number>;
   private koInfo: KoInfo;
 
-  /** 使用二维棋盘布局创建规则实例。 */
-  constructor(layout: GoLayout = []) {
+  /** 使用二维棋盘布局和可选劫子信息创建规则实例。 */
+  constructor(layout: GoLayout = [], ko: KoInfo = { sign: 0, vertex: [-1, -1] }) {
     this.height = layout.length;
     this.width = this.height === 0 ? 0 : layout[0]!.length;
 
@@ -34,7 +34,7 @@ export class GoBoardData {
 
     this.layoutInfo = cloneLayout(layout);
     this.captures = { 1: 0, [-1]: 0 };
-    this.koInfo = { sign: 0, vertex: [-1, -1] };
+    this.koInfo = { sign: ko.sign, vertex: [...ko.vertex] };
   }
 
   /** 获取棋盘尺寸。 */
@@ -256,10 +256,9 @@ export class GoBoardData {
   }
 
   clone(): GoBoardData {
-    const result = new GoBoardData(this.layoutInfo);
+    const result = new GoBoardData(this.layoutInfo, this.koInfo);
     result.captures[1] = this.captures[1];
     result.captures[-1] = this.captures[-1];
-    result.koInfo = { sign: this.koInfo.sign, vertex: [...this.koInfo.vertex] };
     return result;
   }
 

@@ -142,7 +142,7 @@ function handleUpdate(event: GoBoardUpdateEvent) {
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `width` | `number \| string` | `'100%'` | 棋盘容器宽度。数字按像素处理，字符串作为 CSS 宽度值使用。 |
-| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout` 和 `player`。 |
+| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player` 和 `ko`。 |
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。
 
@@ -155,6 +155,7 @@ interface GoGameOptions {
   size?: number | string;
   layout?: GoLayout;
   player?: PlayerSign;
+  ko?: KoInfo;
 }
 ```
 
@@ -163,6 +164,7 @@ interface GoGameOptions {
 | `size` | `number \| string` | `19` | 棋盘边长，支持 1～25 路。 |
 | `layout` | `GoLayout` | 空棋盘 | 初始棋盘布局，必须是 `size × size` 的二维数组。 |
 | `player` | `PlayerSign` | `1` | 当前执棋方：`1` 表示黑方，`-1` 表示白方。 |
+| `ko` | `KoInfo` | `{ sign: 0, vertex: [-1, -1] }` | 初始劫子信息，包含受限方和劫点。 |
 
 棋盘布局中的棋子标记如下：
 
@@ -199,6 +201,7 @@ const init = {
 interface GoBoardUpdateEvent {
   layout: GoLayout;
   player: PlayerSign;
+  ko: KoInfo;
 }
 
 interface GoBoardMoveEvent extends GoBoardUpdateEvent {
@@ -208,7 +211,7 @@ interface GoBoardMoveEvent extends GoBoardUpdateEvent {
 
 坐标使用文本坐标，例如 `A1`、`D4`。坐标会自动去除首尾空格并转为大写；字母 `I` 不参与坐标编号。
 
-事件中的 `layout` 是事件触发时的棋盘布局快照，`player` 是事件发出时规则引擎记录的执棋方。组件会在 `move` 和 `update` 事件发出后切换内部执棋方。
+事件中的 `layout` 是事件触发时的棋盘布局快照，`player` 是事件发出时规则引擎记录的执棋方，`ko` 是当前劫子信息。组件会在 `move` 和 `update` 事件发出后切换内部执棋方。
 
 非法坐标、已有棋子的位置和自杀手不会触发事件。
 

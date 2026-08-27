@@ -40,6 +40,19 @@ game.play('E4');
 | `MIN_SIZE` | `number` | 棋盘边长最小值，值为 `1`。 |
 | `MAX_SIZE` | `number` | 棋盘边长最大值，值为 `25`。 |
 
+## `GoBoardData`
+
+`GoBoardData` 构造函数支持通过第二个可选参数初始化劫子信息：
+
+```ts
+const board = new GoBoardData(layout, {
+  sign: 1,
+  vertex: [2, 1],
+});
+```
+
+传入和返回的劫子顶点都会被复制，外部修改不会影响内部状态。
+
 ## `GoGameData`
 
 ### 构造参数 `GoGameOptions`
@@ -49,6 +62,7 @@ interface GoGameOptions {
   size?: number | string;
   layout?: GoLayout;
   player?: PlayerSign;
+  ko?: KoInfo;
 }
 ```
 
@@ -57,6 +71,7 @@ interface GoGameOptions {
 | `size` | `number \| string` | 棋盘边长，最终会被截断并限制在 `1`～`25`。 | `19` |
 | `layout` | `GoLayout` | 初始棋盘布局，必须是 `size × size` 的二维数组。 | 空棋盘 |
 | `player` | `PlayerSign` | 当前执棋方：`1` 黑方，`-1` 白方。 | `1` |
+| `ko` | `KoInfo` | 初始劫子信息，包含受限方和劫点。 | `{ sign: 0, vertex: [-1, -1] }` |
 
 ### 属性
 
@@ -64,8 +79,9 @@ interface GoGameOptions {
 | --- | --- | --- |
 | `size` | `number` | 当前棋盘边长。 |
 | `player` | `PlayerSign` | 当前执棋方。 |
+| `ko` | `KoInfo` | 当前劫子信息的副本。 |
 | `layout` | `GoLayout` | 当前棋盘布局的副本。修改返回值不会影响棋局。 |
-| `snapshot` | `Required<GoGameOptions>` | 当前棋盘边长、布局和执棋方的完整快照。 |
+| `snapshot` | `Required<GoGameOptions>` | 当前棋盘边长、布局、执棋方和劫子信息的完整快照。 |
 
 ### 方法
 
@@ -164,6 +180,7 @@ isValidLayout(layout, 2); // true
 | `GoVertex` | 棋盘顶点坐标，类型为 `[number, number]`。 |
 | `GoGamePosition` | 落子位置：文本坐标或 `GoVertex`。 |
 | `PlayerSign` | 执棋方：`-1 \| 1`。 |
+| `KoInfo` | 劫子信息，包含 `sign` 和 `vertex`。 |
 | `GoGameOptions` | `GoGameData` 的初始化和重置配置。 |
 
 ## License

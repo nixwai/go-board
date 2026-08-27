@@ -21,6 +21,27 @@ describe('goBoardData', () => {
     expect(isolated.get([0, 0])).toBe(1);
   });
 
+  it('initializes and isolates ko information', () => {
+    const ko = { sign: 1 as const, vertex: [2, 1] as [number, number] };
+    const board = new GoBoardData([
+      [0, 1, -1, 0, 0],
+      [1, -1, 0, -1, 0],
+      [0, 1, -1, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+    ], ko);
+
+    ko.vertex[0] = 0;
+
+    expect(board.ko).toEqual({ sign: 1, vertex: [2, 1] });
+    expect(board.analyzeMove(1, [2, 1]).ko).toBe(true);
+    expect(() => board.makeMove(1, [2, 1], { preventKo: true })).toThrow('Ko prevented');
+
+    const clonedKo = board.ko;
+    clonedKo.vertex[0] = 0;
+    expect(board.ko.vertex).toEqual([2, 1]);
+  });
+
   it('finds neighboring stones, chains, and distinct liberties', () => {
     const rule = new GoBoardData([
       [0, 0, 0, 0],

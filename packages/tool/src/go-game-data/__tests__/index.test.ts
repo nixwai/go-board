@@ -76,6 +76,28 @@ describe('goGameData', () => {
     expect(game.play('C4')).toBe(true);
   });
 
+  it('initializes, snapshots, and restores ko information', () => {
+    const game = new GoGameData({
+      size: 5,
+      player: 1,
+      layout: [
+        [0, 1, -1, 0, 0],
+        [1, -1, 0, -1, 0],
+        [0, 1, -1, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+      ko: { sign: 1, vertex: [2, 1] },
+    });
+
+    expect(game.isLegal('C4')).toBe(false);
+    expect(game.snapshot.ko).toEqual({ sign: 1, vertex: [2, 1] });
+
+    expect(game.play('A1')).toBe(true);
+    expect(game.reset()).toBe(true);
+    expect(game.isLegal('C4')).toBe(false);
+  });
+
   it('captures stones and rejects suicide', () => {
     const captureGame = new GoGameData({
       size: 3,

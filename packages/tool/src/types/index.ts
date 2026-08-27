@@ -16,6 +16,8 @@ export interface GoGameOptions {
   layout?: GoLayout
   /** 初始执棋方。 */
   player?: number
+  /** 初始化劫子信息。 */
+  ko?: KoInfo
 }
 
 /** 劫子信息 */
