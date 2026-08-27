@@ -1,16 +1,17 @@
 # Go Board
 
-基于 Vue 3 和 TypeScript 的围棋棋盘组件库，当前公开提供 `GoBoard` 组件，并 re-export `@go-board/tool` 的围棋规则类型与工具。
+基于 Vue 3 和 TypeScript 的围棋棋盘组件库。`@go-board/design` 当前公开提供 `GoBoard` 组件，并重新导出 `@go-board/tool` 的围棋规则类型、状态管理器与工具函数。
 
 ## 特性
 
 - 提供可直接使用的围棋棋盘组件。
 - 支持 1～25 路棋盘，默认 19 路。
-- 支持初始化棋盘布局和指定当前执棋方。
-- 支持鼠标悬停预览、点击落子、提子和自杀手校验。
-- 支持通过模板引用调用落子和重置方法。
+- 支持初始化棋盘布局、当前执棋方和劫点信息。
+- 支持鼠标悬停预览、点击落子、提子、自杀手和立即回提校验。
+- 支持标记最近一次落子，并可禁用全部棋盘交互。
+- 支持通过模板引用调用落子、停一手和重置方法。
 - 支持单组件导入或全量注册。
-- 支持 TypeScript 类型导出。
+- 支持 TypeScript 类型导出和原生 DOM、ARIA 属性透传。
 
 ## 安装
 
@@ -75,9 +76,9 @@ import { GoBoard } from '@go-board/design';
 ```vue
 <script setup lang="ts">
 import type {
+  GoBoardEvent,
   GoBoardInstance,
-  GoBoardMoveEvent,
-  GoBoardUpdateEvent,
+  GoGameOptions,
 } from '@go-board/design';
 
 import { GoBoard } from '@go-board/design';
@@ -85,7 +86,7 @@ import { ref } from 'vue';
 
 const boardRef = ref<GoBoardInstance>();
 
-const init = {
+const init: GoGameOptions = {
   size: 9,
   player: 1,
 };
@@ -102,13 +103,13 @@ function resetBoard() {
   boardRef.value?.reset();
 }
 
-function handleMove(event: GoBoardMoveEvent) {
+function handleMove(event: GoBoardEvent) {
   console.log('落子位置：', event.position);
   console.log('落子后的棋盘：', event.layout);
-  console.log('事件发出时的执棋方：', event.player);
+  console.log('下一执棋方：', event.player);
 }
 
-function handleUpdate(event: GoBoardUpdateEvent) {
+function handleUpdate(event: GoBoardEvent) {
   console.log('棋盘已更新：', event.layout, event.player);
 }
 </script>
@@ -135,18 +136,19 @@ function handleUpdate(event: GoBoardUpdateEvent) {
 
 ### GoBoard
 
-围棋棋盘组件，负责棋盘展示和基于 `GoGameData` 规则引擎的落子交互。组件内部组合基础棋盘 UI，但基础 UI 组件不是 `@go-board/design` 的公开组件。
+围棋棋盘组件，负责棋盘展示和基于 `GoGameData` 规则引擎的落子交互。组件内部组合 `@go-board/ui` 的基础棋盘组件，并为根节点设置 `grid` 语义、行列数量和单元格语义。
 
 #### Props
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `width` | `number \| string` | `'100%'` | 棋盘容器宽度。数字按像素处理，字符串作为 CSS 宽度值使用。 |
-| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout` 和 `player`。 |
+| `disabled` | `boolean` | `false` | 是否禁用棋盘单元格及鼠标交互。禁用后仍可通过组件实例调用 `play()` 和 `reset()`。 |
+| `width` | `number \| string` | `'100%'` | 棋盘容器宽度。正数按像素处理，字符串作为 CSS 宽度值使用；无效数字或空字符串使用 `100%`。 |
+| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player` 和 `ko`。 |
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。
 
-`size` 会被归一化到 `1`～`25` 的整数范围；未设置或无效时默认为 `19`。
+`size` 会被截断并限制在 `1`～`25` 的整数范围；未设置或无效时默认为 `19`。传入组件的原生 DOM 属性、`class`、`style` 和 ARIA 属性会透传到棋盘根元素。
 
 #### `init` 配置
 
@@ -155,14 +157,16 @@ interface GoGameOptions {
   size?: number | string;
   layout?: GoLayout;
   player?: PlayerSign;
+  ko?: KoInfo;
 }
 ```
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `size` | `number \| string` | `19` | 棋盘边长，支持 1～25 路。 |
-| `layout` | `GoLayout` | 空棋盘 | 初始棋盘布局，必须是 `size × size` 的二维数组。 |
+| `layout` | `GoLayout` | 空棋盘 | 初始棋盘布局，必须是 `size × size` 的二维数组，且现有棋块必须至少有一口气。 |
 | `player` | `PlayerSign` | `1` | 当前执棋方：`1` 表示黑方，`-1` 表示白方。 |
+| `ko` | `KoInfo` | `{ sign: 0, vertex: [-1, -1] }` | 初始劫子信息，包含受限方和劫点。 |
 
 棋盘布局中的棋子标记如下：
 
@@ -192,25 +196,14 @@ const init = {
 
 | 事件 | 参数 | 说明 |
 | --- | --- | --- |
-| `move` | `GoBoardMoveEvent` | 合法落子后触发，包含本次落子坐标和落子后的棋盘布局。 |
-| `update` | `GoBoardUpdateEvent` | 棋盘状态更新后触发；调用 `play()` 停一手时也会触发。 |
+| `move` | `GoBoardEvent` | 合法落子后触发，包含本次落子坐标及落子、切换执棋方后的完整棋局快照。 |
+| `update` | `GoBoardEvent` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照。 |
 
 ```ts
-interface GoBoardUpdateEvent {
-  layout: GoLayout;
-  player: PlayerSign;
-}
-
-interface GoBoardMoveEvent extends GoBoardUpdateEvent {
-  position: string;
+interface GoBoardEvent extends Required<GoGameOptions> {
+  position?: GoVertex;
 }
 ```
-
-坐标使用文本坐标，例如 `A1`、`D4`。坐标会自动去除首尾空格并转为大写；字母 `I` 不参与坐标编号。
-
-事件中的 `layout` 是事件触发时的棋盘布局快照，`player` 是事件发出时规则引擎记录的执棋方。组件会在 `move` 和 `update` 事件发出后切换内部执棋方。
-
-非法坐标、已有棋子的位置和自杀手不会触发事件。
 
 #### Expose 方法
 
@@ -218,7 +211,7 @@ interface GoBoardMoveEvent extends GoBoardUpdateEvent {
 
 | 方法 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `play` | `position?: string` | `boolean` | 在指定坐标落子；不传坐标表示停一手。落子非法时返回 `false`。 |
+| `play` | `position?: GoGamePosition` | `boolean` | 在指定坐标落子；不传坐标、空字符串或纯空白字符串表示停一手。落子非法时返回 `false`，成功后自动切换执棋方。 |
 | `reset` | `options?: GoGameOptions` | `boolean` | 使用新配置重置棋盘；不传参数时恢复最近一次有效配置。配置或布局非法时返回 `false`，并保留当前状态。 |
 
 ```ts
@@ -235,13 +228,13 @@ boardRef.value?.reset({ size: 13, player: 1 });
 
 ### @go-board/tool
 
-棋局状态管理与棋盘数据工具，均已在此库中导出，可以直接引入使用。
+棋局状态管理、不可变棋盘规则实例、坐标归一化、布局创建与校验工具，均已由 `@go-board/design` 重新导出，可以直接引入使用。
 
 相关使用方法请查看相应文档：[@go-board/tool](https://github.com/nixwai/go-board/blob/main/packages/tool/README.md)
 
 ### @go-board/ui
 
-棋盘 UI 组件库，不含任何逻辑，仅提供基础 UI 组件，适用于自定义开发游戏。
+基础棋盘 UI 组件库，负责棋盘绘制、棋子展示、单元格交互和无障碍语义，不负责围棋落子规则与棋局状态管理。
 
 详情请查看：[@go-board/ui](https://github.com/nixwai/go-board/blob/main/packages/ui/README.md)
 

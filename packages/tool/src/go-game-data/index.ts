@@ -1,4 +1,4 @@
-import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, PlayerSign } from '../types';
+import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, KoInfo, PlayerSign } from '../types';
 import { createLayout } from '../create';
 import { GoBoardData } from '../go-board-data';
 import { normalizePlayer, normalizeSize, normalizeVertex } from '../normalize';
@@ -38,6 +38,11 @@ export class GoGameData {
     return this.current;
   }
 
+  /** 返回当前劫子信息的副本。 */
+  get ko(): KoInfo {
+    return this.boardData.ko;
+  }
+
   /** 返回当前棋盘布局的副本。 */
   get layout(): GoLayout {
     return this.boardData.layout;
@@ -49,6 +54,7 @@ export class GoGameData {
       size: this.size,
       layout: this.layout,
       player: this.current,
+      ko: this.ko,
     };
   }
 
@@ -60,19 +66,19 @@ export class GoGameData {
   reset(options?: GoGameOptions): boolean {
     const newOptions = options || this.cachedOptions;
     const size = normalizeSize(newOptions?.size ?? this.boardSize);
-    if (options?.layout && !isValidLayout(options.layout, size)) {
+    if (newOptions?.layout && !isValidLayout(newOptions.layout, size)) {
       return false;
     }
 
-    const layout = options?.layout || createLayout(size);
-    const candidate = new GoBoardData(layout);
+    const layout = newOptions?.layout || createLayout(size);
+    const candidate = new GoBoardData(layout, newOptions?.ko);
     if (!candidate.isValid()) {
       return false;
     }
 
     this.boardSize = size;
     this.boardData = candidate;
-    this.current = normalizePlayer(options?.player);
+    this.current = normalizePlayer(newOptions?.player);
     this.updateCached();
     return true;
   }
@@ -126,7 +132,7 @@ export class GoGameData {
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */
   private toVertex(position: GoGamePosition): GoVertex | null {
-    const vertex = normalizeVertex(position, this.boardData.widLen);
+    const vertex = normalizeVertex(position, this.boardData.widLen[1]);
     return vertex && this.boardData.has(vertex) ? vertex : null;
   }
 

@@ -17,9 +17,11 @@ export function normalizeSize(value?: number | string): number {
   return Math.min(MAX_SIZE, Math.max(MIN_SIZE, Math.trunc(parsed)));
 }
 
-/** 规范化棋盘坐标，并过滤不符合格式的输入。 */
-export function normalizePosition(position: string): string | null {
-  const normalized = position.trim().toUpperCase();
+/** 将文本或顶点坐标统一转换为文本棋盘坐标。 */
+export function normalizePosition(position: GoGamePosition, len: number): string | null {
+  const normalized = typeof position === 'string'
+    ? position.trim().toUpperCase()
+    : `${ALPHA[position[0]] ?? ''}${len - position[1]}`;
   const match = /^([A-HJ-Z]+)(\d+)$/.exec(normalized);
   if (!match) {
     return null;
@@ -33,17 +35,17 @@ export function normalizePosition(position: string): string | null {
 }
 
 /** 将文本棋盘坐标转换为规则引擎顶点；棋盘边界由调用方校验。 */
-export function normalizeVertex(position: GoGamePosition, widLen: [number, number]): GoVertex | null {
+export function normalizeVertex(position: GoGamePosition, len: number): GoVertex | null {
   if (typeof position !== 'string') {
     return position;
   }
 
-  const normalized = normalizePosition(position);
-  if (!normalized || normalized.length < 2) {
+  const normalized = normalizePosition(position, len);
+  if (!normalized) {
     return null;
   }
 
   const x = ALPHA.indexOf(normalized[0]!);
-  const y = widLen[1] - Number(normalized.slice(1));
+  const y = len - Number(normalized.slice(1));
   return [x, y];
 }

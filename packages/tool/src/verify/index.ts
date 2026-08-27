@@ -8,6 +8,7 @@ export function isValidLayout(layout: GoLayout | undefined, size: number) {
 }
 
 /** 棋子是否相等。 */
-export function vertexEquals(first: GoVertex, second: GoVertex): boolean {
+export function vertexEquals(first?: GoVertex, second?: GoVertex): boolean {
+  if (!first || !second) { return false; }
   return first[0] === second[0] && first[1] === second[1];
 }

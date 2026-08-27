@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { ChessGridProps, ChessGridSlotProps } from './chess-grid';
+import type { ChessGridPosition, ChessGridProps, ChessGridSlotProps } from './chess-grid';
 import { computed, useAttrs } from 'vue';
 
 defineOptions({ name: 'ChessGrid', inheritAttrs: false });
 const props = defineProps<ChessGridProps>();
 const emit = defineEmits<{
   /** 鼠标进入棋盘单元时通知当前坐标。 */
-  cellMouseenter: [position: string]
+  cellMouseenter: [position: ChessGridPosition]
   /** 点击棋盘单元时通知当前坐标。 */
-  cellClick: [position: string]
+  cellClick: [position: ChessGridPosition]
 }>();
 defineSlots<{
   /** 渲染单元内容时提供棋子标记和棋盘坐标。 */
@@ -25,8 +25,13 @@ const rows = computed(() => props.rows.map(row => [...row]));
 /** 当前棋盘的边长，用于计算坐标和网格列数。 */
 const size = computed(() => rows.value.length);
 
-/** 将二维数组索引转换为围棋坐标。 */
-function getPosition(x: number, y: number): string {
+/** 将二维数组索引转换为棋盘顶点坐标。 */
+function getPosition(x: number, y: number): ChessGridPosition {
+  return [x, y];
+}
+
+/** 将二维数组索引转换为便于读屏识别的文本坐标。 */
+function getAriaLabel(x: number, y: number): string {
   return `${COLUMN_LABELS[x]}${size.value - y}`;
 }
 
@@ -53,7 +58,7 @@ function handleClick(x: number, y: number) {
         type="button"
         role="gridcell"
         :disabled="props.disabled"
-        :aria-label="getPosition(x, y)"
+        :aria-label="getAriaLabel(x, y)"
         :aria-pressed="sign !== 0"
         @mouseenter="handleMouseenter(x, y)"
         @click="handleClick(x, y)"

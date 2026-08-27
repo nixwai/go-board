@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import type { GoGameOptions } from '@go-board/tool';
-import type {
-  GoBoardExposed,
-  GoBoardMoveEvent,
-  GoBoardProps,
-  GoBoardUpdateEvent,
-} from './go-board';
+import type { GoGameOptions, GoGamePosition, GoVertex } from '@go-board/tool';
+import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
 
-import { GoGameData, normalizePosition } from '@go-board/tool';
+import { GoGameData, normalizeVertex, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -19,54 +14,59 @@ const props = withDefaults(defineProps<GoBoardProps>(), {
 });
 
 const emit = defineEmits<{
-  update: [payload: GoBoardUpdateEvent]
-  move: [payload: GoBoardMoveEvent]
+  update: [payload: GoBoardEvent]
+  move: [payload: GoBoardEvent]
 }>();
 
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
-const boardSize = ref(goGameData.size);
-const rows = ref(goGameData.layout);
-const player = ref(goGameData.player);
-const hoverPosition = ref<string>();
-const lastMovePosition = ref<string>();
+const gameOptions = ref<Required<GoGameOptions>>(goGameData.snapshot);
+const hoverPosition = ref<GoVertex>();
+const lastMovePosition = ref<GoVertex>();
 
-/** 通知外部当前布局和下一手执棋方。 */
-function emitUpdate() {
-  emit('update', {
-    layout: goGameData.layout,
-    player: goGameData.player,
-  });
+/** 复制顶点坐标，避免内部状态与事件暴露可变数组引用。 */
+function cloneVertex(position?: GoVertex): GoVertex | undefined {
+  return position ? [position[0], position[1]] : undefined;
+}
+
+/** 创建包含当前对局快照和可选落子位置的事件数据。 */
+function createEvent(position?: GoVertex): GoBoardEvent {
+  return {
+    ...goGameData.snapshot,
+    position: cloneVertex(position),
+  };
+}
+
+function emitUpdate(position?: GoVertex) {
+  emit('update', createEvent(position));
 }
 
 /** 通知外部本次落子位置及落子后的棋盘快照。 */
-function emitMove(position: string) {
-  emit('move', {
-    layout: goGameData.layout,
-    player: goGameData.player,
-    position,
-  });
+function emitMove(position: GoVertex) {
+  emit('move', createEvent(position));
 }
 
-/** 将规则引擎状态同步到组件响应式状态。 */
+/** 将规则引擎快照同步到组件响应式状态。 */
 function refresh() {
-  boardSize.value = goGameData.size;
-  rows.value = goGameData.layout;
-  player.value = goGameData.player;
+  gameOptions.value = goGameData.snapshot;
   hoverPosition.value = undefined;
 }
 
 /** 处理外部或单元点击触发的落子流程。 */
-function play(position?: string): boolean {
-  if (position?.trim()) {
-    const normalizedPosition = normalizePosition(position);
-    if (!normalizedPosition || !goGameData.play(normalizedPosition)) { return false; }
-    lastMovePosition.value = normalizedPosition;
-    emitMove(normalizedPosition);
+function play(position?: GoGamePosition): boolean {
+  let vertex: GoVertex | undefined;
+  if (position && (typeof position !== 'string' || position.trim())) {
+    vertex = normalizeVertex(position, goGameData.size) ?? undefined;
+    if (!vertex || !goGameData.play(vertex)) { return false; }
+    lastMovePosition.value = vertex;
   }
-  emitUpdate();
+
   goGameData.rotate();
   refresh();
+  if (vertex) {
+    emitMove(vertex);
+  }
+  emitUpdate(vertex);
   return true;
 }
 
@@ -80,7 +80,7 @@ function reset(options?: GoGameOptions): boolean {
 }
 
 /** 仅在当前位置可合法落子时显示预览棋子。 */
-function setHover(position: string) {
+function setHover(position: GoVertex) {
   hoverPosition.value = goGameData.isLegal(position) ? position : undefined;
 }
 
@@ -95,15 +95,15 @@ defineExpose<GoBoardExposed>({ play, reset });
 
 <template>
   <Chessboard
-    :size="boardSize"
+    :size="gameOptions.size"
     :width="props.width"
     role="grid"
-    :aria-rowcount="boardSize"
-    :aria-colcount="boardSize"
+    :aria-rowcount="gameOptions.size"
+    :aria-colcount="gameOptions.size"
     @mouseleave="clearHover"
   >
     <ChessGrid
-      :rows="rows"
+      :rows="gameOptions.layout"
       :disabled="props.disabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
@@ -112,11 +112,11 @@ defineExpose<GoBoardExposed>({ play, reset });
         <ChessPiece
           v-if="sign"
           :sign="sign"
-          :marked="lastMovePosition === position"
+          :marked="vertexEquals(position, lastMovePosition)"
         />
         <ChessPiece
-          v-else-if="hoverPosition === position"
-          :sign="player"
+          v-else-if="vertexEquals(position, hoverPosition)"
+          :sign="gameOptions.player"
           preview
         />
       </template>

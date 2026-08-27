@@ -46,7 +46,7 @@ describe('goBoard', () => {
     const wrapper = mount(GoBoard, { props: { init: { ...init, size: 3 } } });
 
     expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(2);
-    expect(exposed(wrapper).play('C1')).toBe(true);
+    expect(exposed(wrapper).play([2, 2])).toBe(true);
     await nextTick();
     expect(wrapper.findAll('.chess-piece-stone-white')).toHaveLength(2);
   });
@@ -79,7 +79,17 @@ describe('goBoard', () => {
     const moves = wrapper.emitted('move') ?? [];
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
-    expect(moves[0]?.[0]).toMatchObject({ position: 'A1', player: 1 });
+    expect(updates[0]?.[0]).toMatchObject({
+      position: [0, 2],
+      size: 3,
+      player: -1,
+      ko: { sign: 0, vertex: [-1, -1] },
+    });
+    expect(moves[0]?.[0]).toMatchObject({
+      position: [0, 2],
+      player: -1,
+      ko: { sign: 0, vertex: [-1, -1] },
+    });
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
   });
 
@@ -112,6 +122,7 @@ describe('goBoard', () => {
     expect(api.play('A1')).toBe(false);
     expect(api.play('I1')).toBe(false);
     expect(api.play('D4')).toBe(false);
+    expect(api.play([3, 3])).toBe(false);
     expect(wrapper.emitted('update')).toHaveLength(1);
     expect(wrapper.emitted('move')).toHaveLength(1);
   });
@@ -121,6 +132,7 @@ describe('goBoard', () => {
     const api = exposed(wrapper);
 
     expect(api.play()).toBe(true);
+    expect(wrapper.emitted('update')?.[0]?.[0]).toMatchObject({ position: undefined });
     expect(api.play('A1')).toBe(true);
     expect(api.reset()).toBe(true);
     await nextTick();
@@ -176,7 +188,29 @@ describe('goBoard', () => {
 
     await wrapper.find('[aria-label="A1"]').trigger('click');
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
-    expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ position: 'A1' });
+    expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ position: [0, 2] });
+  });
+
+  it('applies initialized ko information', () => {
+    const wrapper = mount(GoBoard, {
+      props: {
+        init: {
+          size: 5,
+          player: 1,
+          layout: [
+            [0, 1, -1, 0, 0],
+            [1, -1, 0, -1, 0],
+            [0, 1, -1, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+          ],
+          ko: { sign: 1, vertex: [2, 1] },
+        },
+      },
+    });
+
+    expect(exposed(wrapper).play('C4')).toBe(false);
+    expect(wrapper.emitted('move')).toBeUndefined();
   });
 
   it('captures surrounded stones and rejects suicide', async () => {

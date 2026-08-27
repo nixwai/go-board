@@ -6,10 +6,13 @@ export interface ChessGridProps {
   disabled?: boolean
 }
 
+/** 棋盘网格单元的二维索引坐标。 */
+export type ChessGridPosition = [number, number];
+
 /** 棋盘网格默认作用域插槽接收的数据。 */
 export interface ChessGridSlotProps {
   /** 当前网格单元的棋子标记。 */
   sign: 0 | 1 | -1
   /** 当前网格单元对应的棋盘坐标。 */
-  position: string
+  position: ChessGridPosition
 }
