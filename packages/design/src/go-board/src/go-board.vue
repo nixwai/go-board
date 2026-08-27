@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { GoGameOptions } from '@go-board/tool';
+import type { GoGameOptions, GoGamePosition, GoVertex } from '@go-board/tool';
 import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
 
-import { GoGameData, normalizePosition } from '@go-board/tool';
+import { GoGameData, normalizeVertex, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -21,20 +21,28 @@ const emit = defineEmits<{
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
 const gameOptions = ref<Required<GoGameOptions>>(goGameData.snapshot);
-const hoverPosition = ref<string>();
-const lastMovePosition = ref<string>();
+const hoverPosition = ref<GoVertex>();
+const lastMovePosition = ref<GoVertex>();
 
-/** 创建包含当前对局快照和可选落子位置的事件数据。 */
-function createEvent(position?: string): GoBoardEvent {
-  return { ...goGameData.snapshot, position };
+/** 复制顶点坐标，避免内部状态与事件暴露可变数组引用。 */
+function cloneVertex(position?: GoVertex): GoVertex | undefined {
+  return position ? [position[0], position[1]] : undefined;
 }
 
-function emitUpdate(position?: string) {
+/** 创建包含当前对局快照和可选落子位置的事件数据。 */
+function createEvent(position?: GoVertex): GoBoardEvent {
+  return {
+    ...goGameData.snapshot,
+    position: cloneVertex(position),
+  };
+}
+
+function emitUpdate(position?: GoVertex) {
   emit('update', createEvent(position));
 }
 
 /** 通知外部本次落子位置及落子后的棋盘快照。 */
-function emitMove(position: string) {
+function emitMove(position: GoVertex) {
   emit('move', createEvent(position));
 }
 
@@ -45,19 +53,20 @@ function refresh() {
 }
 
 /** 处理外部或单元点击触发的落子流程。 */
-function play(position?: string): boolean {
-  let normalizedPosition: string | undefined;
-  if (position?.trim()) {
-    normalizedPosition = normalizePosition(position) ?? undefined;
-    if (!normalizedPosition || !goGameData.play(normalizedPosition)) { return false; }
-    lastMovePosition.value = normalizedPosition;
+function play(position?: GoGamePosition): boolean {
+  let vertex: GoVertex | undefined;
+  if (position && (typeof position !== 'string' || position.trim())) {
+    vertex = normalizeVertex(position, [goGameData.size, goGameData.size]) ?? undefined;
+    if (!vertex || !goGameData.play(vertex)) { return false; }
+    lastMovePosition.value = vertex;
   }
+
   goGameData.rotate();
   refresh();
-  if (normalizedPosition) {
-    emitMove(normalizedPosition);
+  if (vertex) {
+    emitMove(vertex);
   }
-  emitUpdate(normalizedPosition);
+  emitUpdate(vertex);
   return true;
 }
 
@@ -71,7 +80,7 @@ function reset(options?: GoGameOptions): boolean {
 }
 
 /** 仅在当前位置可合法落子时显示预览棋子。 */
-function setHover(position: string) {
+function setHover(position: GoVertex) {
   hoverPosition.value = goGameData.isLegal(position) ? position : undefined;
 }
 
@@ -103,10 +112,10 @@ defineExpose<GoBoardExposed>({ play, reset });
         <ChessPiece
           v-if="sign"
           :sign="sign"
-          :marked="lastMovePosition === position"
+          :marked="vertexEquals(position, lastMovePosition)"
         />
         <ChessPiece
-          v-else-if="hoverPosition === position"
+          v-else-if="vertexEquals(position, hoverPosition)"
           :sign="gameOptions.player"
           preview
         />

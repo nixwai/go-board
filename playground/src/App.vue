@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type {
+  GoBoardEvent,
   GoBoardInstance,
-  GoBoardMoveEvent,
 } from '@go-board/design';
 import type { GoGameOptions } from '@go-board/tool';
 
@@ -27,13 +27,13 @@ function resetBoard() {
   boardRef.value?.reset();
 }
 
-function handleMove(event: GoBoardMoveEvent) {
+function handleMove(event: GoBoardEvent) {
   console.warn('落子位置：', event.position);
   console.warn('落子后的棋盘：', event.layout);
   console.warn('事件发出时的执棋方：', event.player);
 }
 
-function handleUpdate(event: GoBoardMoveEvent) {
+function handleUpdate(event: GoBoardEvent) {
   console.warn('棋盘已更新：', event.layout, event.player);
 }
 </script>

@@ -201,15 +201,9 @@ const init = {
 
 ```ts
 interface GoBoardEvent extends Required<GoGameOptions> {
-  position?: string;
+  position?: GoVertex;
 }
 ```
-
-坐标使用文本坐标，例如 `A1`、`D4`。坐标会自动去除首尾空格并转为大写；字母 `I` 不参与坐标编号。
-
-事件中的 `player` 表示下一执棋方；`position` 为本次落子坐标，停一手或重置触发的 `update` 事件中该字段为空。
-
-非空的非法坐标、越界坐标、已有棋子的位置、自杀手和立即回提不会触发事件；空字符串或纯空白字符串按停一手处理并触发 `update`。
 
 #### Expose 方法
 
@@ -217,7 +211,7 @@ interface GoBoardEvent extends Required<GoGameOptions> {
 
 | 方法 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `play` | `position?: string` | `boolean` | 在指定坐标落子；不传坐标、空字符串或纯空白字符串表示停一手。落子非法时返回 `false`，成功后自动切换执棋方。 |
+| `play` | `position?: GoGamePosition` | `boolean` | 在指定坐标落子；不传坐标、空字符串或纯空白字符串表示停一手。落子非法时返回 `false`，成功后自动切换执棋方。 |
 | `reset` | `options?: GoGameOptions` | `boolean` | 使用新配置重置棋盘；不传参数时恢复最近一次有效配置。配置或布局非法时返回 `false`，并保留当前状态。 |
 
 ```ts

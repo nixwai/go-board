@@ -36,6 +36,8 @@ pnpm add @go-board/ui
 
 ```vue
 <script setup lang="ts">
+import type { ChessGridPosition } from '@go-board/ui';
+
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -47,7 +49,7 @@ const rows = ref<ChessSign[][]>([
   [-1, 0, 0],
 ]);
 
-function handleCellClick(position: string) {
+function handleCellClick(position: ChessGridPosition) {
   console.log(`点击了 ${position}`);
 }
 </script>
@@ -172,7 +174,7 @@ const rows: ChessSign[][] = [
 </template>
 ```
 
-`rows` 按从上到下的顺序表示棋盘行。组件会将列标记为 `A`、`B`、`C`……，跳过字母 `I`；例如，3×3 数据的第一行坐标为 `A3`、`B3`、`C3`，最后一行坐标为 `A1`、`B1`、`C1`。
+`rows` 按从上到下的顺序表示棋盘行。`position` 使用 `[x, y]` 二维索引坐标，`x` 为从左到右的列索引，`y` 为从上到下的行索引，均从 `0` 开始。
 
 #### Props
 
@@ -187,14 +189,14 @@ const rows: ChessSign[][] = [
 
 | 插槽 | 说明 | 参数 |
 | --- | --- | --- |
-| `default` | 自定义每个棋盘单元格的内容 | `sign: 0 \| 1 \| -1`<br>`position: string` |
+| `default` | 自定义每个棋盘单元格的内容 | `sign: 0 \| 1 \| -1`<br>`position: ChessGridPosition` |
 
 #### Events
 
 | 事件 | 说明 | 回调参数 |
 | --- | --- | --- |
-| `cellMouseenter` | 鼠标进入未禁用的棋盘单元格时触发 | `position: string` |
-| `cellClick` | 点击未禁用的棋盘单元格时触发 | `position: string` |
+| `cellMouseenter` | 鼠标进入未禁用的棋盘单元格时触发 | `position: ChessGridPosition` |
+| `cellClick` | 点击未禁用的棋盘单元格时触发 | `position: ChessGridPosition` |
 
 在 Vue 模板中使用短横线事件名：
 
@@ -261,6 +263,8 @@ import { ChessPiece } from '@go-board/ui';
 
 ```vue
 <script setup lang="ts">
+import type { ChessGridPosition } from '@go-board/ui';
+
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
 import { ref } from 'vue';
 
@@ -278,7 +282,7 @@ const rows = ref<ChessSign[][]>([
   [0, 0, 0, 0, -1, 0, 0, 0, 0],
 ]);
 
-function handleCellClick(position: string) {
+function handleCellClick(position: ChessGridPosition) {
   console.log(`点击了 ${position}`);
 }
 </script>

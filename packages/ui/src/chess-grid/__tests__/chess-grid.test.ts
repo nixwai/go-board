@@ -13,15 +13,15 @@ describe('chessGrid', () => {
           [0, -1],
         ],
       },
-      slots: { default: ({ sign, position }) => `${position}:${sign}` },
+      slots: { default: ({ sign, position }) => `${JSON.stringify(position)}:${sign}` },
     });
 
     expect(wrapper.findAll('.chess-grid-cell')).toHaveLength(4);
     expect(wrapper.findAll('.chess-grid-cell').map(cell => cell.text())).toEqual([
-      'A2:1',
-      'B2:0',
-      'A1:0',
-      'B1:-1',
+      '[0,0]:1',
+      '[1,0]:0',
+      '[0,1]:0',
+      '[1,1]:-1',
     ]);
   });
 
@@ -70,7 +70,7 @@ describe('chessGrid', () => {
     await cell.trigger('mouseenter');
     await cell.trigger('click');
 
-    expect(wrapper.emitted('cellMouseenter')).toEqual([['A1']]);
-    expect(wrapper.emitted('cellClick')).toEqual([['A1']]);
+    expect(wrapper.emitted('cellMouseenter')).toEqual([[[0, 0]]]);
+    expect(wrapper.emitted('cellClick')).toEqual([[[0, 0]]]);
   });
 });
