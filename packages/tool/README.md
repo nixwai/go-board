@@ -174,17 +174,18 @@ const copiedLayout = cloneLayout(layout);
 | --- | --- | --- | --- |
 | `normalizePlayer` | `value?: number` | `PlayerSign` | 只有 `-1` 会保留为白方，其他值按黑方 `1` 处理。 |
 | `normalizeSize` | `value?: number \| string` | `number` | 将棋盘边长截断为整数并限制在 `1`～`25`；无效值使用 `19`。 |
-| `normalizePosition` | `position: string` | `string \| null` | 去除首尾空格并转为大写，拒绝字母 `I`、缺少行号或小于 `1` 的行号；不校验具体棋盘边界。 |
-| `normalizeVertex` | `position: GoGamePosition`<br>`widLen: [number, number]` | `GoVertex \| null` | 将文本坐标转换为左上角原点的顶点坐标；传入顶点时原样返回，不校验棋盘边界。 |
+| `normalizePosition` | `position: GoGamePosition`<br>`len: number` | `string \| null` | 将文本或 `GoVertex` 坐标统一转换为大写文本坐标；拒绝字母 `I`、缺少行号或小于 `1` 的行号。 |
+| `normalizeVertex` | `position: GoGamePosition`<br>`len: number` | `GoVertex \| null` | 将文本坐标转换为左上角原点的顶点坐标；传入顶点时原样返回，不校验棋盘边界。 |
 
 ```ts
 import { normalizePlayer, normalizePosition, normalizeSize, normalizeVertex } from '@go-board/tool';
 
 normalizePlayer(undefined); // 1
 normalizeSize('9.8'); // 9
-normalizePosition(' d4 '); // 'D4'
-normalizePosition('I4'); // null
-normalizeVertex('A3', [3, 3]); // [0, 0]
+normalizePosition(' d4 ', 9); // 'D4'
+normalizePosition([1, 2], 3); // 'B1'
+normalizePosition('I4', 9); // null
+normalizeVertex('A3', 3); // [0, 0]
 ```
 
 ## 校验函数

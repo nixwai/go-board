@@ -56,7 +56,7 @@ function refresh() {
 function play(position?: GoGamePosition): boolean {
   let vertex: GoVertex | undefined;
   if (position && (typeof position !== 'string' || position.trim())) {
-    vertex = normalizeVertex(position, [goGameData.size, goGameData.size]) ?? undefined;
+    vertex = normalizeVertex(position, goGameData.size) ?? undefined;
     if (!vertex || !goGameData.play(vertex)) { return false; }
     lastMovePosition.value = vertex;
   }

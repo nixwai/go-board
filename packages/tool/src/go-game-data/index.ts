@@ -132,7 +132,7 @@ export class GoGameData {
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */
   private toVertex(position: GoGamePosition): GoVertex | null {
-    const vertex = normalizeVertex(position, this.boardData.widLen);
+    const vertex = normalizeVertex(position, this.boardData.widLen[1]);
     return vertex && this.boardData.has(vertex) ? vertex : null;
   }
 
