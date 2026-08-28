@@ -13,6 +13,8 @@ describe('goGameData', () => {
       [0, 0, 0],
     ]);
     expect(game.snapshot.latestVertex).toBeUndefined();
+    expect(game.ko).toBeUndefined();
+    expect(game.snapshot.ko).toBeUndefined();
   });
 
   it('plays legal moves and rejects invalid positions', () => {
@@ -169,6 +171,7 @@ describe('goGameData', () => {
     });
 
     expect(game.isLegal('C4')).toBe(false);
+    expect(game.ko).toEqual({ sign: 1, vertex: [2, 1] });
     expect(game.snapshot.ko).toEqual({ sign: 1, vertex: [2, 1] });
 
     expect(game.play('A1')).toBe(true);

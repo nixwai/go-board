@@ -40,9 +40,10 @@ export class GoGameData {
     return this.current;
   }
 
-  /** 返回当前劫子信息的副本。 */
-  get ko(): KoInfo {
-    return this.boardData.ko;
+  /** 返回当前劫子信息的副本；无劫时为空。 */
+  get ko(): KoInfo | undefined {
+    const ko = this.boardData.ko;
+    return ko.sign === 0 ? undefined : ko;
   }
 
   /** 返回当前棋盘布局的副本。 */

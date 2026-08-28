@@ -82,12 +82,12 @@ describe('goBoard', () => {
     expect(updates[0]?.[0]).toMatchObject({
       size: 3,
       player: -1,
-      ko: { sign: 0, vertex: [-1, -1] },
+      ko: undefined,
     });
     expect(moves[0]?.[0]).toMatchObject({
       latestVertex: [0, 2],
       player: -1,
-      ko: { sign: 0, vertex: [-1, -1] },
+      ko: undefined,
     });
     expect(updates[1]?.[0]).toMatchObject({ latestVertex: [1, 1] });
     expect(updates[0]?.[0]).not.toHaveProperty('position');

@@ -18,7 +18,7 @@ export interface GoGameSnapshot {
   /** 初始执棋方。 */
   player: PlayerSign
   /** 初始化劫子信息。 */
-  ko: KoInfo
+  ko?: KoInfo
   /** 最新一手棋子的棋盘坐标。 */
   latestVertex?: GoVertex
 }
