@@ -80,17 +80,57 @@ describe('goBoard', () => {
     expect(updates).toHaveLength(2);
     expect(moves).toHaveLength(2);
     expect(updates[0]?.[0]).toMatchObject({
-      position: [0, 2],
       size: 3,
       player: -1,
       ko: { sign: 0, vertex: [-1, -1] },
     });
     expect(moves[0]?.[0]).toMatchObject({
-      position: [0, 2],
+      latestVertex: [0, 2],
       player: -1,
       ko: { sign: 0, vertex: [-1, -1] },
     });
+    expect(updates[1]?.[0]).toMatchObject({ latestVertex: [1, 1] });
+    expect(updates[0]?.[0]).not.toHaveProperty('position');
+    expect(moves[0]?.[0]).not.toHaveProperty('position');
     expect((moves[0]?.[0] as { layout: GoLayout }).layout).not.toBe((moves[1]?.[0] as { layout: GoLayout }).layout);
+  });
+
+  it('marks the latest position supplied by the initialized game state', () => {
+    const wrapper = mount(GoBoard, {
+      props: {
+        init: {
+          size: 3,
+          layout: [
+            [0, 0, 0],
+            [0, -1, 0],
+            [1, 0, 0],
+          ],
+          player: 1,
+          latestVertex: [1, 1],
+        },
+      },
+    });
+
+    expect(wrapper.find('[aria-label="B2"] .chess-piece-stone-marked').exists()).toBe(true);
+    expect(wrapper.findAll('.chess-piece-stone-marked')).toHaveLength(1);
+  });
+
+  it('restores and isolates the latest position through reset and emitted events', async () => {
+    const wrapper = mount(GoBoard, { props: { init: { size: 3 } } });
+    const api = exposed(wrapper);
+
+    expect(api.play('A1')).toBe(true);
+    await nextTick();
+    const move = wrapper.emitted('move')?.[0]?.[0] as { latestVertex: [number, number] };
+    move.latestVertex[0] = 2;
+    expect(wrapper.find('[aria-label="A1"] .chess-piece-stone-marked').exists()).toBe(true);
+
+    const layout = emptyLayout(3);
+    layout[0][2] = 1;
+    expect(api.reset({ size: 3, layout, player: -1, latestVertex: [2, 0] })).toBe(true);
+    await nextTick();
+    expect(wrapper.find('[aria-label="C3"] .chess-piece-stone-marked').exists()).toBe(true);
+    expect(wrapper.findAll('.chess-piece-stone-marked')).toHaveLength(1);
   });
 
   it('marks only the latest played piece', async () => {
@@ -132,16 +172,20 @@ describe('goBoard', () => {
     const api = exposed(wrapper);
 
     expect(api.play()).toBe(true);
-    expect(wrapper.emitted('update')?.[0]?.[0]).toMatchObject({ position: undefined });
+    expect(api.play('   ')).toBe(false);
+    expect(wrapper.emitted('update')?.[0]?.[0]).toMatchObject({ latestVertex: undefined });
     expect(api.play('A1')).toBe(true);
+    expect(api.play()).toBe(true);
+    expect(wrapper.emitted('update')?.[2]?.[0]).toMatchObject({ latestVertex: [0, 2] });
     expect(api.reset()).toBe(true);
+    expect(wrapper.emitted('update')?.[3]?.[0]).toMatchObject({ latestVertex: undefined });
     await nextTick();
     expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     expect(api.play('A1')).toBe(true);
 
     const resetLayout = emptyLayout(3);
     resetLayout[2][2] = 1;
-    expect(api.reset({ layout: resetLayout, player: -1 })).toBe(true);
+    expect(api.reset({ layout: resetLayout, player: -1, latestVertex: [0, 0] })).toBe(true);
     await nextTick();
     expect(wrapper.findAll('.chess-piece-stone')).toHaveLength(1);
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
@@ -188,7 +232,7 @@ describe('goBoard', () => {
 
     await wrapper.find('[aria-label="A1"]').trigger('click');
     expect(wrapper.find('.chess-piece-stone-black').exists()).toBe(true);
-    expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ position: [0, 2] });
+    expect(wrapper.emitted('move')?.[0]?.[0]).toMatchObject({ latestVertex: [0, 2] });
   });
 
   it('applies initialized ko information', () => {

@@ -28,7 +28,7 @@ function resetBoard() {
 }
 
 function handleMove(event: GoBoardEvent) {
-  console.warn('落子位置：', event.position);
+  console.warn('落子位置：', event.latestVertex);
   console.warn('落子后的棋盘：', event.layout);
   console.warn('事件发出时的执棋方：', event.player);
 }

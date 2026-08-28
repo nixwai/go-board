@@ -1,10 +1,7 @@
-import type { GoGameOptions, GoGamePosition, GoVertex } from '@go-board/tool';
+import type { GoGameOptions, GoGamePosition, GoGameSnapshot } from '@go-board/tool';
 
 /** 棋盘状态事件的数据结构。 */
-export interface GoBoardEvent extends Required<GoGameOptions> {
-  /** 本次落子的棋盘坐标；停一手或重置时为空。 */
-  position?: GoVertex
-}
+export type GoBoardEvent = GoGameSnapshot;
 
 /** 围棋棋盘组件的输入属性。 */
 export interface GoBoardProps {

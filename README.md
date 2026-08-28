@@ -104,7 +104,7 @@ function resetBoard() {
 }
 
 function handleMove(event: GoBoardEvent) {
-  console.log('落子位置：', event.position);
+  console.log('落子位置：', event.latestVertex);
   console.log('落子后的棋盘：', event.layout);
   console.log('下一执棋方：', event.player);
 }
@@ -144,7 +144,7 @@ function handleUpdate(event: GoBoardEvent) {
 | --- | --- | --- | --- |
 | `disabled` | `boolean` | `false` | 是否禁用棋盘单元格及鼠标交互。禁用后仍可通过组件实例调用 `play()` 和 `reset()`。 |
 | `width` | `number \| string` | `'100%'` | 棋盘容器宽度。正数按像素处理，字符串作为 CSS 宽度值使用；无效数字或空字符串使用 `100%`。 |
-| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player` 和 `ko`。 |
+| `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player`、`ko` 和 `latestVertex`。 |
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。
 
@@ -158,6 +158,7 @@ interface GoGameOptions {
   layout?: GoLayout;
   player?: PlayerSign;
   ko?: KoInfo;
+  latestVertex?: GoVertex;
 }
 ```
 
@@ -167,6 +168,7 @@ interface GoGameOptions {
 | `layout` | `GoLayout` | 空棋盘 | 初始棋盘布局，必须是 `size × size` 的二维数组，且现有棋块必须至少有一口气。 |
 | `player` | `PlayerSign` | `1` | 当前执棋方：`1` 表示黑方，`-1` 表示白方。 |
 | `ko` | `KoInfo` | `{ sign: 0, vertex: [-1, -1] }` | 初始劫子信息，包含受限方和劫点。 |
+| `latestVertex` | `GoVertex` | — | 最新一手棋子的棋盘坐标；坐标无棋子或越界时自动置空。 |
 
 棋盘布局中的棋子标记如下：
 
@@ -196,13 +198,11 @@ const init = {
 
 | 事件 | 参数 | 说明 |
 | --- | --- | --- |
-| `move` | `GoBoardEvent` | 合法落子后触发，包含本次落子坐标及落子、切换执棋方后的完整棋局快照。 |
-| `update` | `GoBoardEvent` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照。 |
+| `move` | `GoBoardEvent` | 合法落子后触发，包含 `latestVertex` 及切换执棋方后的完整棋局快照。 |
+| `update` | `GoBoardEvent` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照；停一手时保留上一手 `latestVertex`。 |
 
 ```ts
-interface GoBoardEvent extends Required<GoGameOptions> {
-  position?: GoVertex;
-}
+type GoBoardEvent = GoGameSnapshot;
 ```
 
 #### Expose 方法
@@ -212,7 +212,7 @@ interface GoBoardEvent extends Required<GoGameOptions> {
 | 方法 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
 | `play` | `position?: GoGamePosition` | `boolean` | 在指定坐标落子；不传坐标、空字符串或纯空白字符串表示停一手。落子非法时返回 `false`，成功后自动切换执棋方。 |
-| `reset` | `options?: GoGameOptions` | `boolean` | 使用新配置重置棋盘；不传参数时恢复最近一次有效配置。配置或布局非法时返回 `false`，并保留当前状态。 |
+| `reset` | `options?: GoGameOptions` | `boolean` | 使用新配置重置棋盘；不传参数时恢复最近一次有效配置。布局或规则校验失败时返回 `false` 并保留当前状态；无效 `latestVertex` 会被置空。 |
 
 ```ts
 import type { GoBoardExposed } from '@go-board/design';

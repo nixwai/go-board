@@ -92,6 +92,7 @@ interface GoGameOptions {
   layout?: GoLayout;
   player?: PlayerSign;
   ko?: KoInfo;
+  latestVertex?: GoVertex;
 }
 ```
 
@@ -101,6 +102,7 @@ interface GoGameOptions {
 | `layout` | `GoLayout` | 初始棋盘布局，必须是 `size × size` 的二维数组，且现有棋块必须至少有一口气。 | 空棋盘 |
 | `player` | `PlayerSign` | 当前执棋方：`1` 黑方，`-1` 白方。 | `1` |
 | `ko` | `KoInfo` | 初始劫子信息，包含受限方和劫点。 | `{ sign: 0, vertex: [-1, -1] }` |
+| `latestVertex` | `GoVertex` | 最新一手棋子的棋盘坐标；坐标无棋子或越界时自动置空。 | `undefined` |
 
 构造配置无效时会回退到对应尺寸的空棋盘和黑方执棋。
 
@@ -113,18 +115,19 @@ interface GoGameOptions {
 | `player` | `PlayerSign` | 当前执棋方。 |
 | `ko` | `KoInfo` | 当前劫子信息的副本。 |
 | `layout` | `GoLayout` | 当前棋盘布局的副本。修改返回值不会影响棋局。 |
-| `snapshot` | `Required<GoGameOptions>` | 当前棋盘边长、布局、执棋方和劫子信息的完整副本。 |
+| `snapshot` | `GoGameSnapshot` | 当前棋盘边长、布局、执棋方、劫子信息和最新落点的完整副本。 |
 
 ### 方法
 
 | 方法 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `reset` | `options?: GoGameOptions` | `boolean` | 按配置重置棋局。配置或布局校验失败时返回 `false` 并保留原状态；不传参数时恢复最近一次有效配置。 |
+| `reset` | `options?: GoGameOptions` | `boolean` | 按配置重置棋局。布局或规则校验失败时返回 `false` 并保留原状态；无效 `latestVertex` 会被置空；不传参数时恢复最近一次有效配置。 |
 | `clear` | `size?: number \| string`<br>`next?: PlayerSign` | `void` | 清空棋盘，并设置棋盘边长和执棋方；不会更新 `reset()` 使用的最近有效配置。 |
-| `play` | `position: GoGamePosition`<br>`player?: PlayerSign` | `boolean` | 尝试落子并执行占位、提子、自杀手和立即回提校验。成功后不会自动切换执棋方；可选 `player` 会在合法性预检通过后写入当前执棋方。 |
+| `play` | `position: GoGamePosition`<br>`player?: PlayerSign` | `boolean` | 尝试落子并执行占位、提子、自杀手和立即回提校验。成功后更新 `latestVertex`，但不会自动切换执棋方；可选 `player` 会在合法性预检通过后写入当前执棋方。 |
 | `rotate` | 无 | `void` | 在黑方和白方之间切换执棋方。 |
 | `getSign` | `position: GoGamePosition` | `GoSign \| undefined` | 获取指定位置的棋子标记；位置无效或越界时返回 `undefined`。 |
 | `isLegal` | `position: GoGamePosition` | `boolean` | 判断指定位置对当前执棋方是否为合法落点。 |
+| `hasStone` | `position: GoGamePosition` | `boolean` | 判断指定位置在当前棋盘中是否存在棋子。 |
 
 `player` 参数不是临时覆盖：合法性预检使用调用前的当前执棋方，预检通过后才写入指定执棋方，并且不会自动恢复；如果随后规则实例抛出异常，方法返回 `false`，但已写入的执棋方仍会保留。
 
@@ -159,13 +162,15 @@ if (game.isLegal('C3') && game.play('C3')) {
 | 函数 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
 | `cloneLayout` | `layout: GoLayout` | `GoLayout` | 深拷贝棋盘布局，避免直接修改原二维数组。 |
+| `cloneVertex` | `vertex?: GoVertex` | `GoVertex \| undefined` | 复制顶点坐标，避免共享可变数组引用。 |
 | `createLayout` | `size: number` | `GoLayout` | 创建指定边长的空棋盘布局。 |
 
 ```ts
-import { cloneLayout, createLayout } from '@go-board/tool';
+import { cloneLayout, cloneVertex, createLayout } from '@go-board/tool';
 
 const layout = createLayout(9);
 const copiedLayout = cloneLayout(layout);
+const copiedVertex = cloneVertex([1, 2]);
 ```
 
 ## 归一化函数
@@ -218,6 +223,7 @@ vertexEquals([0, 1], [0, 1]); // true
 | `PlayerSign` | 执棋方：`-1 \| 1`。 |
 | `KoInfo` | 劫子信息，包含 `sign` 和 `vertex`。 |
 | `GoGameOptions` | `GoGameData` 的初始化和重置配置。 |
+| `GoGameSnapshot` | 必填棋局字段与可为空的 `latestVertex` 组成的完整对局快照。 |
 
 ## License
 
