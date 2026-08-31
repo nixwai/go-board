@@ -11,7 +11,7 @@
 - 支持标记最近一次落子，并可禁用全部棋盘交互。
 - 支持通过模板引用调用落子、停一手和重置方法。
 - 支持单组件导入或全量注册。
-- 支持 TypeScript 类型导出和原生 DOM、ARIA 属性透传。
+- 支持 TypeScript 类型导出和原生 DOM 属性透传。
 
 ## 安装
 
@@ -148,7 +148,7 @@ function handleUpdate(event: GoBoardEvent) {
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。
 
-`size` 会被截断并限制在 `1`～`25` 的整数范围；未设置或无效时默认为 `19`。传入组件的原生 DOM 属性、`class`、`style` 和 ARIA 属性会透传到棋盘根元素。
+`size` 会被截断并限制在 `1`～`25` 的整数范围；未设置或无效时默认为 `19`。传入组件的原生 DOM 属性、`class`、`style` 会透传到棋盘根元素。
 
 #### `init` 配置
 
