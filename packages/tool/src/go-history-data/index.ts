@@ -9,8 +9,8 @@ export class GoHistoryData {
   private history: GoGameOptions[];
   private position: number;
 
-  /** 使用快照列表和当前播放位置创建历史记录，位置从 0 开始计数。 */
-  constructor(snapshots: GoGameOptions[] = [], currentPosition = 0) {
+  /** 使用快照列表和当前播放位置创建历史记录，默认定位到最后一个快照。 */
+  constructor(snapshots: GoGameOptions[] = [], currentPosition = snapshots.length - 1) {
     this.history = snapshots;
     const normalizedPosition = Number.isFinite(currentPosition) ? Math.trunc(currentPosition) : 0;
     this.position = this.history.length > 0
@@ -36,6 +36,12 @@ export class GoHistoryData {
   /** 返回全部历史快照。 */
   get snapshots(): GoGameOptions[] {
     return this.history;
+  }
+
+  /** 清空全部历史快照，并将当前播放位置重置为空历史状态。 */
+  clear(): void {
+    this.history.length = 0;
+    this.position = -1;
   }
 
   /** 基于当前播放位置向前查看指定步数，并更新当前播放位置。 */

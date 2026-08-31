@@ -23,16 +23,24 @@ describe('goHistoryData', () => {
     const history = new GoHistoryData(snapshots, 1);
 
     expect(history.length).toBe(2);
-    expect(history.currentPosition).toBe(1);
-    expect(history.current).toBe(second);
+    expect(history.current).toBe(1);
+    expect(history.snapshot).toBe(second);
     expect(history.snapshots).toBe(snapshots);
 
     second.layout![0]![0] = 0;
     second.ko!.vertex[0] = 0;
 
-    expect(history.current).toBe(second);
-    expect(history.current?.layout?.[0]?.[0]).toBe(0);
-    expect(history.current?.ko?.vertex[0]).toBe(0);
+    expect(history.snapshot).toBe(second);
+    expect(history.snapshot?.layout?.[0]?.[0]).toBe(0);
+    expect(history.snapshot?.ko?.vertex[0]).toBe(0);
+  });
+
+  it('defaults the current position to the last snapshot', () => {
+    const snapshots = [createSnapshot(1), createSnapshot(-1), createSnapshot(1)];
+    const history = new GoHistoryData(snapshots);
+
+    expect(history.current).toBe(2);
+    expect(history.snapshot).toBe(snapshots[2]);
   });
 
   it('navigates backward, forward, and jumps to an absolute position', () => {
@@ -40,22 +48,22 @@ describe('goHistoryData', () => {
     const history = new GoHistoryData(snapshots, 1);
 
     expect(history.backward()).toBe(snapshots[0]);
-    expect(history.currentPosition).toBe(0);
+    expect(history.current).toBe(0);
     expect(history.forward(2)).toBe(snapshots[2]);
-    expect(history.currentPosition).toBe(2);
+    expect(history.current).toBe(2);
     expect(history.jump(1)).toBe(snapshots[1]);
-    expect(history.currentPosition).toBe(1);
+    expect(history.current).toBe(1);
   });
 
   it('keeps the current position when navigation goes out of bounds', () => {
     const history = new GoHistoryData([createSnapshot(1), createSnapshot(-1)], 0);
 
     expect(history.backward()).toBeUndefined();
-    expect(history.currentPosition).toBe(0);
+    expect(history.current).toBe(0);
     expect(history.forward(2)).toBeUndefined();
-    expect(history.currentPosition).toBe(0);
+    expect(history.current).toBe(0);
     expect(history.jump(2)).toBeUndefined();
-    expect(history.currentPosition).toBe(0);
+    expect(history.current).toBe(0);
     expect(history.forward(0)).toBeUndefined();
   });
 
@@ -66,14 +74,14 @@ describe('goHistoryData', () => {
     const history = new GoHistoryData([first, second], 0);
 
     expect(history.insert(inserted)).toBe(true);
-    expect(history.currentPosition).toBe(1);
-    expect(history.current).toBe(inserted);
+    expect(history.current).toBe(1);
+    expect(history.snapshot).toBe(inserted);
     expect(history.snapshots).toEqual([first, inserted]);
     expect(history.length).toBe(2);
 
     inserted.layout![0]![0] = -1;
-    expect(history.current).toBe(inserted);
-    expect(history.current?.layout?.[0]?.[0]).toBe(-1);
+    expect(history.snapshot).toBe(inserted);
+    expect(history.snapshot?.layout?.[0]?.[0]).toBe(-1);
   });
 
   it('supports inserting at an explicit position and starts empty histories at the inserted snapshot', () => {
@@ -82,13 +90,25 @@ describe('goHistoryData', () => {
     const history = new GoHistoryData([first, second], 1);
 
     expect(history.insert(createSnapshot(1, 7), 0)).toBe(true);
-    expect(history.currentPosition).toBe(0);
-    expect(history.snapshots[0]).toBe(history.current);
+    expect(history.current).toBe(0);
+    expect(history.snapshots[0]).toBe(history.snapshot);
 
     const emptyHistory = new GoHistoryData([], 0);
-    expect(emptyHistory.current).toBeUndefined();
+    expect(emptyHistory.snapshot).toBeUndefined();
     expect(emptyHistory.insert(first)).toBe(true);
-    expect(emptyHistory.currentPosition).toBe(0);
-    expect(emptyHistory.current).toEqual(first);
+    expect(emptyHistory.current).toBe(0);
+    expect(emptyHistory.snapshot).toEqual(first);
+  });
+
+  it('clears all snapshots and resets the current position', () => {
+    const snapshots = [createSnapshot(1), createSnapshot(-1)];
+    const history = new GoHistoryData(snapshots, 1);
+
+    expect(history.clear()).toBeUndefined();
+    expect(history.snapshots).toBe(snapshots);
+    expect(history.snapshots).toEqual([]);
+    expect(history.length).toBe(0);
+    expect(history.current).toBe(-1);
+    expect(history.snapshot).toBeUndefined();
   });
 });
