@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { defineComponent, h, inject, nextTick } from 'vue';
 import GoSave from '../src/go-save.vue';
-import { GO_SAVE_EVENT_KEYS, GO_SAVE_INJECTION_KEY } from '../src/keys';
+import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../src/keys';
 
 function snapshot(player: 1 | -1): GoGameOptions {
   return { size: 3, player, layout: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] };
@@ -14,7 +14,7 @@ function snapshot(player: 1 | -1): GoGameOptions {
 function createChild(onContext: (context: GoSaveContext) => void) {
   return defineComponent({
     setup() {
-      const context = inject(GO_SAVE_INJECTION_KEY);
+      const context = inject(GO_SAVE_INJECTION);
       if (!context) { throw new Error('GoSave context is missing'); }
       onContext(context);
       return () => h('div', {
@@ -70,12 +70,12 @@ describe('goSave', () => {
 
     const changes: string[] = [];
     context.onListen((change) => { changes.push(change.key); }, () => {});
-    expect(changes).toEqual([GO_SAVE_EVENT_KEYS.rebuild]);
+    expect(changes).toEqual([GO_SAVE_EVENT.REBUILD]);
 
     await wrapper.setProps({ value: [second] });
     expect(context.snapshot).toBe(second);
     expect(context.length).toBe(1);
-    expect(changes).toEqual([GO_SAVE_EVENT_KEYS.rebuild, GO_SAVE_EVENT_KEYS.rebuild]);
+    expect(changes).toEqual([GO_SAVE_EVENT.REBUILD, GO_SAVE_EVENT.REBUILD]);
     await nextTick();
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('1');
   });
@@ -92,7 +92,7 @@ describe('goSave', () => {
     context.onListen((value) => { change = value; }, () => {});
 
     expect(change).toMatchObject({
-      key: GO_SAVE_EVENT_KEYS.rebuild,
+      key: GO_SAVE_EVENT.REBUILD,
       current: 0,
       length: 1,
       snapshot: saved,
@@ -121,12 +121,12 @@ describe('goSave', () => {
     context.clear();
 
     expect(changes.map(change => change.key)).toEqual([
-      GO_SAVE_EVENT_KEYS.rebuild,
-      GO_SAVE_EVENT_KEYS.save,
-      GO_SAVE_EVENT_KEYS.load,
-      GO_SAVE_EVENT_KEYS.save,
-      GO_SAVE_EVENT_KEYS.backward,
-      GO_SAVE_EVENT_KEYS.clear,
+      GO_SAVE_EVENT.REBUILD,
+      GO_SAVE_EVENT.SAVE,
+      GO_SAVE_EVENT.LOAD,
+      GO_SAVE_EVENT.SAVE,
+      GO_SAVE_EVENT.BACKWARD,
+      GO_SAVE_EVENT.CLEAR,
     ]);
     expect(changes).toEqual([
       { key: 'rebuild', current: -1, length: 0 },

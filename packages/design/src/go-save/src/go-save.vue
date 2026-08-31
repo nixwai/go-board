@@ -4,7 +4,7 @@ import type { GoSaveChange, GoSaveChangeListener, GoSaveContext, GoSaveExposed, 
 
 import { GoHistoryData } from '@go-board/tool';
 import { provide, shallowRef, toRaw, watch } from 'vue';
-import { GO_SAVE_EVENT_KEYS, GO_SAVE_INJECTION_KEY } from './keys';
+import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from './keys';
 
 defineOptions({ name: 'GoSave' });
 
@@ -45,7 +45,7 @@ function notify(change: GoSaveChange) {
 function rebuildHistory(value?: GoGameOptions[]) {
   goHistoryData = new GoHistoryData(toRaw(value ?? []));
   version.value += 1;
-  notify(createChange(GO_SAVE_EVENT_KEYS.rebuild));
+  notify(createChange(GO_SAVE_EVENT.REBUILD));
 }
 
 /** 接收外部双向绑定值变化，并重建历史数据实例。 */
@@ -98,7 +98,7 @@ function onListen(
     }
   };
   onBeforeMount(unregister);
-  registeredListener(createChange(GO_SAVE_EVENT_KEYS.rebuild));
+  registeredListener(createChange(GO_SAVE_EVENT.REBUILD));
   return unregister;
 }
 
@@ -106,7 +106,7 @@ function onListen(
 function save(snapshot: GoGameOptions, position?: number): boolean {
   const result = goHistoryData.insert(snapshot, position);
   if (result) {
-    syncChange(GO_SAVE_EVENT_KEYS.save);
+    syncChange(GO_SAVE_EVENT.SAVE);
   }
   return result;
 }
@@ -115,7 +115,7 @@ function save(snapshot: GoGameOptions, position?: number): boolean {
 function load(position: number): GoGameOptions | undefined {
   const result = goHistoryData.jump(position);
   if (result !== undefined) {
-    syncChange(GO_SAVE_EVENT_KEYS.load);
+    syncChange(GO_SAVE_EVENT.LOAD);
   }
   return result;
 }
@@ -124,7 +124,7 @@ function load(position: number): GoGameOptions | undefined {
 function forward(step?: number): GoGameOptions | undefined {
   const result = goHistoryData.forward(step);
   if (result !== undefined) {
-    syncChange(GO_SAVE_EVENT_KEYS.forward);
+    syncChange(GO_SAVE_EVENT.FORWARD);
   }
   return result;
 }
@@ -133,7 +133,7 @@ function forward(step?: number): GoGameOptions | undefined {
 function backward(step?: number): GoGameOptions | undefined {
   const result = goHistoryData.backward(step);
   if (result !== undefined) {
-    syncChange(GO_SAVE_EVENT_KEYS.backward);
+    syncChange(GO_SAVE_EVENT.BACKWARD);
   }
   return result;
 }
@@ -142,7 +142,7 @@ function backward(step?: number): GoGameOptions | undefined {
 function clear() {
   if (goHistoryData.length === 0 && goHistoryData.current === -1) { return; }
   goHistoryData.clear();
-  syncChange(GO_SAVE_EVENT_KEYS.clear);
+  syncChange(GO_SAVE_EVENT.CLEAR);
 }
 
 /** 通过上下文暴露响应式历史属性和操作方法。 */
@@ -171,7 +171,7 @@ const context: GoSaveContext = {
   },
 };
 
-provide(GO_SAVE_INJECTION_KEY, context);
+provide(GO_SAVE_INJECTION, context);
 
 defineExpose<GoSaveExposed>({ save, load, forward, backward, clear, onListen });
 </script>
