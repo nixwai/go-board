@@ -19,10 +19,34 @@ defineSlots<{
   default: () => unknown
 }>();
 
+/** GoHistoryData 负责隔离历史数组，快照对象本身仍由调用方决定是否复制。 */
 let goHistoryData = new GoHistoryData(toRaw(props.value ?? []));
 let pendingValue: GoGameOptions[] | undefined;
 const version = shallowRef(0);
 const listeners: GoSaveChangeListener[] = [];
+
+/** 创建当前历史状态事件；事件列表只做浅拷贝，不深拷贝快照对象。 */
+function createChange(key: GoSaveChange['key']): GoSaveChange {
+  return {
+    key,
+    current: goHistoryData.current,
+    length: goHistoryData.length,
+    snapshot: goHistoryData.snapshot,
+    snapshots: goHistoryData.snapshots.slice(),
+  };
+}
+
+/** 通知全部监听方当前历史发生变化。 */
+function notify(change: GoSaveChange) {
+  listeners.slice().forEach(listener => listener(change));
+}
+
+/** 重建历史数据实例，并通知已有监听方。 */
+function rebuildHistory(value?: GoGameOptions[]) {
+  goHistoryData = new GoHistoryData(toRaw(value ?? []));
+  version.value += 1;
+  notify(createChange(GO_SAVE_EVENT_KEYS.rebuild));
+}
 
 /** 接收外部双向绑定值变化，并重建历史数据实例。 */
 watch(
@@ -34,8 +58,7 @@ watch(
       return;
     }
 
-    goHistoryData = new GoHistoryData(toRaw(value ?? []));
-    version.value += 1;
+    rebuildHistory(value);
   },
 );
 
@@ -55,27 +78,10 @@ function emitValue() {
 function syncChange(key: GoSaveChange['key']) {
   refresh();
   emitValue();
-  notify(key);
+  notify(createChange(key));
 }
 
-/** 创建当前历史状态事件，向监听方传递原始快照引用。 */
-function createChange(key: GoSaveChange['key']): GoSaveChange {
-  return {
-    key,
-    current: goHistoryData.current,
-    length: goHistoryData.length,
-    snapshot: goHistoryData.snapshot,
-    snapshots: goHistoryData.snapshots,
-  };
-}
-
-/** 通知全部监听方当前历史发生变化。 */
-function notify(key: GoSaveChange['key']) {
-  const change = createChange(key);
-  listeners.slice().forEach(listener => listener(change));
-}
-
-/** 注册历史变化监听，并将注销方法交给调用方的生命周期回调。 */
+/** 注册历史变化监听，并立即补发初始化或最近一次重建事件。 */
 function onListen(
   listener: GoSaveChangeListener,
   onBeforeMount: GoSaveOnBeforeMount,
@@ -92,6 +98,7 @@ function onListen(
     }
   };
   onBeforeMount(unregister);
+  registeredListener(createChange(GO_SAVE_EVENT_KEYS.rebuild));
   return unregister;
 }
 

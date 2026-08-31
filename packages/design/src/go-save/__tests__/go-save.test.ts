@@ -68,11 +68,35 @@ describe('goSave', () => {
       slots: { default: () => h(Child) },
     });
 
+    const changes: string[] = [];
+    context.onListen((change) => { changes.push(change.key); }, () => {});
+    expect(changes).toEqual([GO_SAVE_EVENT_KEYS.rebuild]);
+
     await wrapper.setProps({ value: [second] });
     expect(context.snapshot).toBe(second);
     expect(context.length).toBe(1);
+    expect(changes).toEqual([GO_SAVE_EVENT_KEYS.rebuild, GO_SAVE_EVENT_KEYS.rebuild]);
     await nextTick();
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('1');
+  });
+
+  it('replays the latest history data when a listener registers after operations', () => {
+    let context!: GoSaveContext;
+    const Child = createChild((value) => { context = value; });
+    mount(GoSave, { slots: { default: () => h(Child) } });
+
+    const saved = snapshot(1);
+    expect(context.save(saved)).toBe(true);
+
+    let change!: { key: string, current: number, length: number, snapshot?: GoGameOptions };
+    context.onListen((value) => { change = value; }, () => {});
+
+    expect(change).toMatchObject({
+      key: GO_SAVE_EVENT_KEYS.rebuild,
+      current: 0,
+      length: 1,
+      snapshot: saved,
+    });
   });
 
   it('notifies registered listeners with operation keys and history data', () => {
@@ -97,6 +121,7 @@ describe('goSave', () => {
     context.clear();
 
     expect(changes.map(change => change.key)).toEqual([
+      GO_SAVE_EVENT_KEYS.rebuild,
       GO_SAVE_EVENT_KEYS.save,
       GO_SAVE_EVENT_KEYS.load,
       GO_SAVE_EVENT_KEYS.save,
@@ -104,6 +129,7 @@ describe('goSave', () => {
       GO_SAVE_EVENT_KEYS.clear,
     ]);
     expect(changes).toEqual([
+      { key: 'rebuild', current: -1, length: 0 },
       { key: 'save', current: 0, length: 1 },
       { key: 'load', current: 0, length: 1 },
       { key: 'save', current: 1, length: 2 },
@@ -113,7 +139,7 @@ describe('goSave', () => {
 
     unregister();
     expect(context.save(first)).toBe(true);
-    expect(changes).toHaveLength(5);
+    expect(changes).toHaveLength(6);
   });
 
   it('keeps caller-provided snapshot references without implicit deep copies', () => {

@@ -11,6 +11,7 @@ export const GO_SAVE_EVENT_KEYS = {
   forward: 'forward',
   backward: 'backward',
   clear: 'clear',
+  rebuild: 'rebuild',
 } as const;
 
 export type GoSaveEventKey = typeof GO_SAVE_EVENT_KEYS[keyof typeof GO_SAVE_EVENT_KEYS];
