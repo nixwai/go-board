@@ -11,7 +11,7 @@ export class GoHistoryData {
 
   /** 使用快照列表和当前播放位置创建历史记录，默认定位到最后一个快照。 */
   constructor(snapshots: GoGameOptions[] = [], currentPosition = snapshots.length - 1) {
-    this.history = snapshots;
+    this.history = [...snapshots];
     const normalizedPosition = Number.isFinite(currentPosition) ? Math.trunc(currentPosition) : 0;
     this.position = this.history.length > 0
       ? Math.min(Math.max(normalizedPosition, 0), this.history.length - 1)

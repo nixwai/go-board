@@ -32,15 +32,16 @@ describe('goSave', () => {
     const second = snapshot(-1);
     const Child = createChild((value) => { context = value; });
     const wrapper = mount(GoSave, {
-      props: { snapshots: [first, second], currentPosition: 0 },
+      props: { value: [first, second] },
       slots: { default: () => h(Child) },
     });
 
-    expect(wrapper.find('[data-current]').attributes('data-current')).toBe('0');
+    expect(wrapper.find('[data-current]').attributes('data-current')).toBe('1');
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('2');
-    expect(context.snapshot).toBe(first);
+    expect(context.snapshot).toBe(second);
     expect(context.snapshots).toEqual([first, second]);
-    expect(context.backward()).toBeUndefined();
+    expect(context.backward()).toBe(first);
+    expect(context.current).toBe(0);
     expect(context.forward()).toBe(second);
     expect(context.current).toBe(1);
     expect(context.load(0)).toBe(first);
@@ -51,9 +52,27 @@ describe('goSave', () => {
     expect(context.snapshot).toBe(third);
     expect(context.length).toBe(2);
     expect(context.snapshots).toEqual([first, third]);
+    expect(wrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([first, third]);
     await nextTick();
     expect(wrapper.find('[data-current]').attributes('data-current')).toBe('1');
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('2');
+  });
+
+  it('updates internal history when the controlled value changes', async () => {
+    let context!: GoSaveContext;
+    const first = snapshot(1);
+    const second = snapshot(-1);
+    const Child = createChild((value) => { context = value; });
+    const wrapper = mount(GoSave, {
+      props: { value: [first] },
+      slots: { default: () => h(Child) },
+    });
+
+    await wrapper.setProps({ value: [second] });
+    expect(context.snapshot).toBe(second);
+    expect(context.length).toBe(1);
+    await nextTick();
+    expect(wrapper.find('[data-current]').attributes('data-length')).toBe('1');
   });
 
   it('notifies registered listeners with operation keys and history data', () => {

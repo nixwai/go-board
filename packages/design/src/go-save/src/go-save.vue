@@ -1,29 +1,61 @@
 <script setup lang="ts">
 import type { GoGameOptions } from '@go-board/tool';
-import type { GoSaveChange, GoSaveChangeListener, GoSaveContext, GoSaveOnBeforeMount, GoSaveProps } from './go-save';
+import type { GoSaveChange, GoSaveChangeListener, GoSaveContext, GoSaveExposed, GoSaveOnBeforeMount, GoSaveProps } from './go-save';
 
 import { GoHistoryData } from '@go-board/tool';
-import { provide, shallowRef, toRaw } from 'vue';
+import { provide, shallowRef, toRaw, watch } from 'vue';
 import { GO_SAVE_EVENT_KEYS, GO_SAVE_INJECTION_KEY } from './keys';
 
 defineOptions({ name: 'GoSave' });
 
 const props = defineProps<GoSaveProps>();
+const emit = defineEmits<{
+  /** 历史快照列表变化时同步受控值。 */
+  'update:value': [value: GoGameOptions[]]
+}>();
 
 defineSlots<{
   /** 存档上下文的默认内容插槽，不传递作用域参数。 */
   default: () => unknown
 }>();
 
-/** 使用调用方提供的快照引用维护历史，不在组件内部进行深拷贝。 */
-const snapshots = props.snapshots ? toRaw(props.snapshots) : [];
-const goHistoryData = new GoHistoryData(snapshots, props.currentPosition);
+let goHistoryData = new GoHistoryData(toRaw(props.value ?? []));
+let pendingValue: GoGameOptions[] | undefined;
 const version = shallowRef(0);
 const listeners: GoSaveChangeListener[] = [];
+
+/** 接收外部双向绑定值变化，并重建历史数据实例。 */
+watch(
+  () => props.value,
+  (value) => {
+    const rawValue = value ? toRaw(value) : undefined;
+    if (pendingValue && rawValue === pendingValue) {
+      pendingValue = undefined;
+      return;
+    }
+
+    goHistoryData = new GoHistoryData(toRaw(value ?? []));
+    version.value += 1;
+  },
+);
 
 /** 触发响应式属性更新；历史类本身仍负责保存真实数据。 */
 function refresh() {
   version.value += 1;
+}
+
+/** 将历史快照列表同步给使用 v-model:value 的调用方。 */
+function emitValue() {
+  const value = goHistoryData.snapshots.slice();
+  pendingValue = value;
+  emit('update:value', value);
+}
+
+/** 同步当前历史状态，并通知监听方数据发生变化。 */
+function syncChange(key: GoSaveChange['key']) {
+  refresh();
+  emitValue();
+  notify(key);
 }
 
 /** 创建当前历史状态事件，向监听方传递原始快照引用。 */
@@ -63,52 +95,47 @@ function onListen(
   return unregister;
 }
 
-/** 保存快照并通知数据变化。 */
+/** 保存快照并同步受控值、通知数据变化。 */
 function save(snapshot: GoGameOptions, position?: number): boolean {
   const result = goHistoryData.insert(snapshot, position);
   if (result) {
-    refresh();
-    notify(GO_SAVE_EVENT_KEYS.save);
+    syncChange(GO_SAVE_EVENT_KEYS.save);
   }
   return result;
 }
 
-/** 读取指定位置快照并通知当前位置变化。 */
+/** 读取指定位置快照并同步受控值、通知当前位置变化。 */
 function load(position: number): GoGameOptions | undefined {
   const result = goHistoryData.jump(position);
   if (result !== undefined) {
-    refresh();
-    notify(GO_SAVE_EVENT_KEYS.load);
+    syncChange(GO_SAVE_EVENT_KEYS.load);
   }
   return result;
 }
 
-/** 前进指定步数并在位置变化后通知监听方。 */
+/** 前进指定步数并在位置变化后同步受控值、通知监听方。 */
 function forward(step?: number): GoGameOptions | undefined {
   const result = goHistoryData.forward(step);
   if (result !== undefined) {
-    refresh();
-    notify(GO_SAVE_EVENT_KEYS.forward);
+    syncChange(GO_SAVE_EVENT_KEYS.forward);
   }
   return result;
 }
 
-/** 后退指定步数并在位置变化后通知监听方。 */
+/** 后退指定步数并在位置变化后同步受控值、通知监听方。 */
 function backward(step?: number): GoGameOptions | undefined {
   const result = goHistoryData.backward(step);
   if (result !== undefined) {
-    refresh();
-    notify(GO_SAVE_EVENT_KEYS.backward);
+    syncChange(GO_SAVE_EVENT_KEYS.backward);
   }
   return result;
 }
 
-/** 清除历史并在确实发生变化后通知监听方。 */
+/** 清除历史并在确实发生变化后同步受控值、通知监听方。 */
 function clear() {
   if (goHistoryData.length === 0 && goHistoryData.current === -1) { return; }
   goHistoryData.clear();
-  refresh();
-  notify(GO_SAVE_EVENT_KEYS.clear);
+  syncChange(GO_SAVE_EVENT_KEYS.clear);
 }
 
 /** 通过上下文暴露响应式历史属性和操作方法。 */
@@ -138,6 +165,8 @@ const context: GoSaveContext = {
 };
 
 provide(GO_SAVE_INJECTION_KEY, context);
+
+defineExpose<GoSaveExposed>({ save, load, forward, backward, clear, onListen });
 </script>
 
 <template>

@@ -25,7 +25,8 @@ describe('goHistoryData', () => {
     expect(history.length).toBe(2);
     expect(history.current).toBe(1);
     expect(history.snapshot).toBe(second);
-    expect(history.snapshots).toBe(snapshots);
+    expect(history.snapshots).not.toBe(snapshots);
+    expect(snapshots).toHaveLength(2);
 
     second.layout![0]![0] = 0;
     second.ko!.vertex[0] = 0;
@@ -105,7 +106,8 @@ describe('goHistoryData', () => {
     const history = new GoHistoryData(snapshots, 1);
 
     expect(history.clear()).toBeUndefined();
-    expect(history.snapshots).toBe(snapshots);
+    expect(history.snapshots).not.toBe(snapshots);
+    expect(snapshots).toHaveLength(2);
     expect(history.snapshots).toEqual([]);
     expect(history.length).toBe(0);
     expect(history.current).toBe(-1);

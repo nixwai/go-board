@@ -50,10 +50,18 @@ export interface GoSaveContext {
   ) => () => void
 }
 
+/** GoSave 暴露给模板引用的实例方法。 */
+export interface GoSaveExposed {
+  save: GoSaveContext['save']
+  load: GoSaveContext['load']
+  forward: GoSaveContext['forward']
+  backward: GoSaveContext['backward']
+  clear: GoSaveContext['clear']
+  onListen: GoSaveContext['onListen']
+}
+
 /** GoSave 组件的输入属性。 */
 export interface GoSaveProps {
-  /** 初始化历史快照列表；组件不会复制快照。 */
-  snapshots?: GoGameOptions[]
-  /** 初始化时的当前历史位置。 */
-  currentPosition?: number
+  /** 初始化或受控的历史快照列表；组件不会深拷贝快照。 */
+  value?: GoGameOptions[]
 }
