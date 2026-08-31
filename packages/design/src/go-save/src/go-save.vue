@@ -111,7 +111,7 @@ function save(snapshot: GoGameOptions, position?: number): boolean {
   return result;
 }
 
-/** 清空历史并保存一条新的当前快照，整个操作只通知一次 RESET 事件。 */
+/** 清空历史并保存一条新的当前快照 */
 function reset(snapshot: GoGameOptions): boolean {
   goHistoryData = new GoHistoryData([snapshot]);
   syncChange(GO_SAVE_EVENT.RESET);

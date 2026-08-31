@@ -29,13 +29,13 @@ const hoverPosition = ref<GoVertex>();
 
 /** 通知外部当前完整对局快照。 */
 function emitUpdate() {
-  emit('update', goGameData.snapshot);
+  emit('update', goSnapshot.value);
 }
 
 /** 保存并通知外部落子后的完整对局快照。 */
 function emitMove() {
-  goSave?.save(goGameData.snapshot);
-  emit('move', goGameData.snapshot);
+  goSave?.save(goSnapshot.value);
+  emit('move', goSnapshot.value);
 }
 
 /** 将规则引擎快照同步到组件响应式状态。 */
@@ -61,7 +61,7 @@ function play(position?: GoGamePosition): boolean {
 function reset(options?: GoGameOptions): boolean {
   if (!goGameData.reset(options)) { return false; }
   refresh();
-  goSave?.reset(goGameData.snapshot);
+  goSave?.reset(goSnapshot.value);
   emitUpdate();
   return true;
 }
@@ -98,7 +98,7 @@ if (goSave) {
 
     goGameData.reset(goGameData.cached);
     refresh();
-    goSave?.save(goGameData.snapshot);
+    goSave?.save(goSnapshot.value);
     emitUpdate();
   }
 
