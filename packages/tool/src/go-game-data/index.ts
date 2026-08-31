@@ -15,7 +15,7 @@ export class GoGameData {
   /** 最新一手棋子的棋盘坐标。 */
   private latestVertex?: GoVertex;
   /** 缓存最近一次有效配置，用于重置。 */
-  private cachedSnapshot?: GoGameSnapshot;
+  private cachedSnapshot!: GoGameSnapshot;
 
   /** 使用给定配置创建对局；无效配置时回退为空棋盘。 */
   constructor(options?: GoGameOptions) {
@@ -60,6 +60,11 @@ export class GoGameData {
       ko: this.ko,
       latestVertex: cloneVertex(this.latestVertex),
     };
+  }
+
+  /** 获取缓存的对局快照。 */
+  get cached(): GoGameSnapshot {
+    return this.cachedSnapshot;
   }
 
   private updateCached() {

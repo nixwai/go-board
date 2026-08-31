@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { GoGameOptions, GoGamePosition, GoGameSnapshot, GoVertex } from '@go-board/tool';
+import type { GoSaveChange } from '../../go-save/src/go-save';
 import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
-import { ref } from 'vue';
+import { inject, onBeforeUnmount, ref } from 'vue';
+import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../../go-save/src/keys';
 
 defineOptions({ name: 'GoBoard' });
 
@@ -18,6 +20,8 @@ const emit = defineEmits<{
   move: [payload: GoBoardEvent]
 }>();
 
+const goSave = inject(GO_SAVE_INJECTION);
+
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
 const goSnapshot = ref<GoGameSnapshot>(goGameData.snapshot);
@@ -28,8 +32,9 @@ function emitUpdate() {
   emit('update', goGameData.snapshot);
 }
 
-/** 通知外部落子后的完整对局快照。 */
+/** 保存并通知外部落子后的完整对局快照。 */
 function emitMove() {
+  goSave?.save(goGameData.snapshot);
   emit('move', goGameData.snapshot);
 }
 
@@ -52,10 +57,11 @@ function play(position?: GoGamePosition): boolean {
   return true;
 }
 
-/** 重置对局并同步更新后的棋盘状态。 */
+/** 重置对局，清除旧存档并保存唯一的重置快照。 */
 function reset(options?: GoGameOptions): boolean {
   if (!goGameData.reset(options)) { return false; }
   refresh();
+  goSave?.reset(goGameData.snapshot);
   emitUpdate();
   return true;
 }
@@ -72,6 +78,51 @@ function clearHover() {
 
 /** 暴露给父组件的对局控制方法。 */
 defineExpose<GoBoardExposed>({ play, reset });
+
+if (goSave) {
+  /** 使用存档快照替换当前棋盘，无效快照直接拒绝。 */
+  function restore(snapshot?: GoGameOptions): boolean {
+    if (!snapshot || !goGameData.reset(snapshot)) { return false; }
+
+    refresh();
+    emitUpdate();
+    return true;
+  }
+
+  /** 重建时优先恢复存档；空存档使用初始化数据并创建首条快照。 */
+  function rebuild(snapshot?: GoGameOptions) {
+    if (snapshot) {
+      restore(snapshot);
+      return;
+    }
+
+    goGameData.reset(goGameData.cached);
+    refresh();
+    goSave?.save(goGameData.snapshot);
+    emitUpdate();
+  }
+
+  /** 根据存档事件同步棋盘，RESET 与 SAVE 由当前操作流程直接完成。 */
+  function onSaveChange(change: GoSaveChange) {
+    switch (change.key) {
+      case GO_SAVE_EVENT.REBUILD:
+        rebuild(change.snapshot);
+        break;
+      case GO_SAVE_EVENT.RESET:
+      case GO_SAVE_EVENT.SAVE:
+        break;
+      case GO_SAVE_EVENT.LOAD:
+      case GO_SAVE_EVENT.FORWARD:
+      case GO_SAVE_EVENT.BACKWARD:
+        restore(change.snapshot);
+        break;
+      case GO_SAVE_EVENT.CLEAR:
+        restore(goGameData.cached);
+        break;
+    }
+  }
+  goSave.onListen(onSaveChange, onBeforeUnmount);
+}
 </script>
 
 <template>

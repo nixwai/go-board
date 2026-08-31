@@ -111,6 +111,13 @@ function save(snapshot: GoGameOptions, position?: number): boolean {
   return result;
 }
 
+/** 清空历史并保存一条新的当前快照，整个操作只通知一次 RESET 事件。 */
+function reset(snapshot: GoGameOptions): boolean {
+  goHistoryData = new GoHistoryData([snapshot]);
+  syncChange(GO_SAVE_EVENT.RESET);
+  return true;
+}
+
 /** 读取指定位置快照并同步受控值、通知当前位置变化。 */
 function load(position: number): GoGameOptions | undefined {
   const result = goHistoryData.jump(position);
@@ -148,6 +155,7 @@ function clear() {
 /** 通过上下文暴露响应式历史属性和操作方法。 */
 const context: GoSaveContext = {
   save,
+  reset,
   load,
   forward,
   backward,
@@ -173,7 +181,7 @@ const context: GoSaveContext = {
 
 provide(GO_SAVE_INJECTION, context);
 
-defineExpose<GoSaveExposed>({ save, load, forward, backward, clear, onListen });
+defineExpose<GoSaveExposed>({ save, reset, load, forward, backward, clear, onListen });
 </script>
 
 <template>

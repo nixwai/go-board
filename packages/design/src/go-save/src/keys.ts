@@ -7,6 +7,7 @@ export const GO_SAVE_INJECTION: InjectionKey<GoSaveContext> = Symbol('GO_SAVE_IN
 /** GoSave 数据变化事件的 key。 */
 export const GO_SAVE_EVENT = {
   SAVE: 'save',
+  RESET: 'reset',
   LOAD: 'load',
   FORWARD: 'forward',
   BACKWARD: 'backward',

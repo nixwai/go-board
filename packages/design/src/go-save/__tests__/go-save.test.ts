@@ -58,6 +58,29 @@ describe('goSave', () => {
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('2');
   });
 
+  it('resets history to one snapshot and emits a RESET event', () => {
+    let context!: GoSaveContext;
+    const Child = createChild((value) => { context = value; });
+    mount(GoSave, { slots: { default: () => h(Child) } });
+
+    const first = snapshot(1);
+    const second = snapshot(-1);
+    const changes: string[] = [];
+    context.onListen((change) => { changes.push(change.key); }, () => {});
+    changes.length = 0;
+
+    expect(context.save(first)).toBe(true);
+    expect(context.save(second)).toBe(true);
+    changes.length = 0;
+    expect(context.reset(first)).toBe(true);
+
+    expect(context.current).toBe(0);
+    expect(context.length).toBe(1);
+    expect(context.snapshot).toBe(first);
+    expect(context.snapshots).toEqual([first]);
+    expect(changes).toEqual([GO_SAVE_EVENT.RESET]);
+  });
+
   it('updates internal history when the controlled value changes', async () => {
     let context!: GoSaveContext;
     const first = snapshot(1);

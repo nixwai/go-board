@@ -27,6 +27,8 @@ export type GoSaveOnBeforeMount = typeof onBeforeMount;
 export interface GoSaveContext {
   /** 保存快照，并丢弃当前快照之后的历史记录。 */
   save: (snapshot: GoGameOptions, position?: number) => boolean
+  /** 清空历史并保存一条新的当前快照。 */
+  reset: (snapshot: GoGameOptions) => boolean
   /** 读取指定位置的快照。 */
   load: (position: number) => GoGameOptions | undefined
   /** 向历史前方移动指定步数。 */
@@ -53,6 +55,7 @@ export interface GoSaveContext {
 /** GoSave 暴露给模板引用的实例方法。 */
 export interface GoSaveExposed {
   save: GoSaveContext['save']
+  reset: GoSaveContext['reset']
   load: GoSaveContext['load']
   forward: GoSaveContext['forward']
   backward: GoSaveContext['backward']
