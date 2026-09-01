@@ -65,11 +65,11 @@ function toPercent(position: number): number {
 <style>
 .chessboard-stars {
   position: absolute;
-  inset: 1.5%;
+  inset: 5%;
   z-index: 1;
   display: block;
-  width: calc(100% - 3%);
-  height: calc(100% - 3%);
+  width: 90%;
+  height: 90%;
   overflow: visible;
   pointer-events: none;
 }

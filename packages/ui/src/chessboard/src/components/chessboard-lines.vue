@@ -45,11 +45,11 @@ const lineOffsets = computed(() => {
 <style>
 .chessboard-lines {
   position: absolute;
-  inset: 1.5%;
+  inset: 5%;
   z-index: 0;
   display: block;
-  width: calc(100% - 3%);
-  height: calc(100% - 3%);
+  width: 90%;
+  height: 90%;
   overflow: visible;
   pointer-events: none;
   stroke: #5c421e;

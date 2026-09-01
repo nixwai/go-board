@@ -4,4 +4,6 @@ export interface ChessboardProps {
   size: number | string
   /** 棋盘容器宽度，支持数字像素值或 CSS 宽度字符串。 */
   width?: number | string
+  /** 是否在棋盘左右两侧显示行坐标。 */
+  showCoord?: boolean
 }
