@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "run-s tool:build ui:build design:build",
+    "release": "gulp release -f common/release.ts",
     "design:release": "gulp release -f design/index.ts",
     "design:build": "gulp build -f design/index.ts",
     "design:publish": "gulp publish -f design/index.ts",
