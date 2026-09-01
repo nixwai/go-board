@@ -38,10 +38,6 @@ function pass() {
   boardRef.value?.play();
 }
 
-function resetBoard() {
-  boardRef.value?.reset();
-}
-
 function handleUpdate(event: GoBoardEvent) {
   snapshot.value = event;
 }
@@ -109,11 +105,8 @@ function handleUpdate(event: GoBoardEvent) {
           <GoHistoryButton :step="1">
             前进
           </GoHistoryButton>
-          <button type="button" @click="resetBoard">
-            重置棋盘
-          </button>
           <GoHistoryButton :step="0">
-            清空存档
+            重置棋盘
           </GoHistoryButton>
         </div>
       </GoSave>

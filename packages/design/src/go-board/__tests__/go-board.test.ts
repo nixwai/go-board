@@ -428,6 +428,40 @@ describe('goBoard', () => {
     ]);
   });
 
+  it('synchronizes externally changed snapshots without re-saving them', async () => {
+    const { boardWrapper, saveApi, saveWrapper } = mountSavedBoard({ size: 3 });
+
+    await nextTick();
+    const initialSaveCount = saveWrapper.emitted('update:value')?.length ?? 0;
+    const savedLayout = emptyLayout(3);
+    savedLayout[0][0] = 1;
+    const saved = {
+      size: 3,
+      layout: savedLayout,
+      player: -1,
+      latestVertex: [0, 0],
+    } as GoGameOptions;
+
+    expect(saveApi.save(saved)).toBe(true);
+    await nextTick();
+    expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone-black').exists()).toBe(true);
+    expect(saveWrapper.emitted('update:value')).toHaveLength(initialSaveCount + 1);
+
+    const resetLayout = emptyLayout(3);
+    resetLayout[2][2] = -1;
+    const reset = {
+      size: 3,
+      layout: resetLayout,
+      player: 1,
+      latestVertex: [2, 2],
+    } as GoGameOptions;
+
+    expect(saveApi.reset(reset)).toBe(true);
+    await nextTick();
+    expect(boardWrapper.find('[aria-label="C1"] .chess-piece-stone-white').exists()).toBe(true);
+    expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone').exists()).toBe(false);
+    expect(saveWrapper.emitted('update:value')).toHaveLength(initialSaveCount + 2);
+  });
   it('synchronizes archive navigation without creating snapshots', async () => {
     const firstLayout = emptyLayout(3);
     firstLayout[0][0] = 1;

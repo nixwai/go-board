@@ -21,6 +21,23 @@ const emit = defineEmits<{
 }>();
 
 const goSave = inject(GO_SAVE_INJECTION);
+let archiveMutationDepth = 0;
+
+/** 标记棋盘主动写入存档的同步调用，避免重复处理自身产生的事件。 */
+function runArchiveMutation<T, P extends unknown[]>(mutation?: (...params: P) => T) {
+  return (...params: P) => {
+    archiveMutationDepth += 1;
+    try {
+      return mutation?.(...params);
+    }
+    finally {
+      archiveMutationDepth -= 1;
+    }
+  };
+}
+
+const saveToArchive = runArchiveMutation(goSave?.save);
+const resetArchive = runArchiveMutation(goSave?.reset);
 
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
@@ -50,7 +67,7 @@ function play(position?: GoGamePosition): boolean {
   goGameData.rotate();
   refresh();
   if (position) {
-    goSave?.save(goSnapshot.value);
+    saveToArchive(goSnapshot.value);
     emitMove();
   }
   emitUpdate();
@@ -61,7 +78,7 @@ function play(position?: GoGamePosition): boolean {
 function reset(options?: GoGameOptions): boolean {
   if (!goGameData.reset(options)) { return false; }
   refresh();
-  goSave?.reset(goSnapshot.value);
+  resetArchive(goSnapshot.value);
   emitUpdate();
   return true;
 }
@@ -93,27 +110,29 @@ if (goSave) {
     const version = goSaveContext.version;
     const currentSnapshot = goSnapshot.value;
     void nextTick(() => {
-      if (
-        version !== goSaveContext.version
-        || goSaveContext.length !== 0
-      ) {
+      if (version !== goSaveContext.version || goSaveContext.length) {
         return;
       }
 
-      goSaveContext.save(currentSnapshot);
+      saveToArchive(currentSnapshot);
     });
   }
 
-  /** 根据存档事件同步棋盘，RESET 与 SAVE 由当前操作流程直接完成。 */
+  /** 根据存档事件同步棋盘；事件处理只更新棋盘，不触发新的存档操作。 */
   function onSaveChange(change: GoSaveChange) {
+    if (archiveMutationDepth > 0) { return; }
+
     switch (change.key) {
       case GO_SAVE_EVENT.REBUILD:
       case GO_SAVE_EVENT.CLEAR:
         resetHistory(change.snapshot);
         break;
       case GO_SAVE_EVENT.RESET:
-      case GO_SAVE_EVENT.SAVE:
+        if (!change.snapshot || !goGameData.reset(change.snapshot)) { break; }
+        refresh();
+        emitUpdate();
         break;
+      case GO_SAVE_EVENT.SAVE:
       case GO_SAVE_EVENT.LOAD:
       case GO_SAVE_EVENT.FORWARD:
       case GO_SAVE_EVENT.BACKWARD:
