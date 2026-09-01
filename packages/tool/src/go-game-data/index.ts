@@ -1,5 +1,5 @@
-import type { GoGameOptions, GoGamePosition, GoLayout, GoSign, GoVertex, KoInfo, PlayerSign } from '../types';
-import { createLayout } from '../create';
+import type { GoGameOptions, GoGamePosition, GoGameSnapshot, GoLayout, GoSign, GoVertex, KoInfo, PlayerSign } from '../types';
+import { cloneVertex, createLayout } from '../create';
 import { GoBoardData } from '../go-board-data';
 import { normalizePlayer, normalizeSize, normalizeVertex } from '../normalize';
 import { isValidLayout } from '../verify';
@@ -12,8 +12,10 @@ export class GoGameData {
   private boardData!: GoBoardData;
   /** 当前执棋方。 */
   private current!: PlayerSign;
+  /** 最新一手棋子的棋盘坐标。 */
+  private latestVertex?: GoVertex;
   /** 缓存最近一次有效配置，用于重置。 */
-  private cachedOptions?: GoGameOptions;
+  private cachedSnapshot!: GoGameSnapshot;
 
   /** 使用给定配置创建对局；无效配置时回退为空棋盘。 */
   constructor(options?: GoGameOptions) {
@@ -38,9 +40,10 @@ export class GoGameData {
     return this.current;
   }
 
-  /** 返回当前劫子信息的副本。 */
-  get ko(): KoInfo {
-    return this.boardData.ko;
+  /** 返回当前劫子信息的副本；无劫时为空。 */
+  get ko(): KoInfo | undefined {
+    const ko = this.boardData.ko;
+    return ko.sign === 0 ? undefined : ko;
   }
 
   /** 返回当前棋盘布局的副本。 */
@@ -48,37 +51,53 @@ export class GoGameData {
     return this.boardData.layout;
   }
 
-  /** 返回包含尺寸、布局和执棋方的完整对局快照。 */
-  get snapshot(): Required<GoGameOptions> {
+  /** 返回包含当前规则状态和最新落点的完整对局快照。 */
+  get snapshot(): GoGameSnapshot {
     return {
       size: this.size,
       layout: this.layout,
       player: this.current,
       ko: this.ko,
+      latestVertex: cloneVertex(this.latestVertex),
     };
   }
 
-  private updateCached() {
-    this.cachedOptions = this.snapshot;
+  /** 获取缓存的对局快照。 */
+  get cached(): GoGameSnapshot {
+    return this.cachedSnapshot;
   }
 
-  /** 按配置重置对局，C配置或规则校验失败时保持原状态。 */
-  reset(options?: GoGameOptions): boolean {
-    const newOptions = options || this.cachedOptions;
-    const size = normalizeSize(newOptions?.size ?? this.boardSize);
-    if (newOptions?.layout && !isValidLayout(newOptions.layout, size)) {
+  private updateCached() {
+    this.cachedSnapshot = this.snapshot;
+  }
+
+  /** 按配置更新对局，配置或规则校验失败时保持原状态。 */
+  update(options: GoGameOptions): boolean {
+    const size = normalizeSize(options.size ?? this.boardSize);
+    if (options.layout && !isValidLayout(options.layout, size)) {
       return false;
     }
 
-    const layout = newOptions?.layout || createLayout(size);
-    const candidate = new GoBoardData(layout, newOptions?.ko);
+    const layout = options.layout || createLayout(size);
+    const candidate = new GoBoardData(layout, options.ko);
     if (!candidate.isValid()) {
       return false;
     }
 
     this.boardSize = size;
     this.boardData = candidate;
-    this.current = normalizePlayer(newOptions?.player);
+    this.current = normalizePlayer(options.player);
+    this.latestVertex = this.hasStone(options.latestVertex) ? cloneVertex(options.latestVertex) : undefined;
+    return true;
+  }
+
+  /** 按配置重置对局，配置或规则校验失败时保持原状态，并缓存配置。 */
+  reset(options?: GoGameOptions): boolean {
+    const newOptions = options ?? this.cachedSnapshot;
+    if (!newOptions || !this.update(newOptions)) {
+      return false;
+    }
+
     this.updateCached();
     return true;
   }
@@ -88,6 +107,7 @@ export class GoGameData {
     this.boardSize = normalizeSize(size ?? this.boardSize);
     this.boardData = new GoBoardData(createLayout(this.boardSize));
     this.current = normalizePlayer(next);
+    this.latestVertex = undefined;
   }
 
   /** 尝试在指定位置落子，可临时指定本次落子的执棋方。 */
@@ -106,6 +126,7 @@ export class GoGameData {
         preventSuicide: true,
         preventKo: true,
       });
+      this.latestVertex = cloneVertex(vertex);
     }
     catch {
       return false;
@@ -128,6 +149,14 @@ export class GoGameData {
   isLegal(position: GoGamePosition): boolean {
     const vertex = this.toVertex(position);
     return this.isLegalVertex(vertex);
+  }
+
+  /** 判断指定位置在当前棋盘中是否存在棋子。 */
+  hasStone(position?: GoGamePosition): boolean {
+    if (!position) { return false; }
+    const vertex = this.toVertex(position);
+    const sign = vertex ? this.boardData.get(vertex) : null;
+    return sign === 1 || sign === -1;
   }
 
   /** 将文本坐标转换为规则引擎顶点，并确认其位于当前棋盘内。 */

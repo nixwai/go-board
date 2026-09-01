@@ -96,6 +96,21 @@ pnpm play:dev
 - 优先复用已有工具、构建配置和组件模式，不重复实现已有能力。
 - 不随意调整目录结构、包名、公开导出路径或构建产物路径。
 
+## 编码与注释文件安全
+
+- 项目源码、配置文件和 Markdown 文档统一使用 UTF-8 编码，禁止使用系统默认编码读写文件。
+- Windows PowerShell 5.1 中不要使用默认编码的 `Get-Content | Set-Content` 重写源码。
+- Windows PowerShell 5.1 写入源码时，使用 UTF-8 无 BOM 编码，避免触发 ESLint 的 `unicode-bom` 检查：
+
+```powershell
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText((Resolve-Path $path), $content, $utf8)
+```
+
+- 不要通过 PowerShell 管道向原生程序传递包含中文的源码或脚本，避免中文被转换为 `?`；应使用 UTF-8 文件作为输入。
+- 修改中文文件后，必须使用 UTF-8 重新读取验证，确认没有出现 `?`、`锟斤拷`、`�` 或其他乱码。
+- 发现注释或文档乱码时，先检查文件实际字节编码，再修改内容；不能只依据终端显示结果判断文件是否损坏。
+- 修改完成后执行 `pnpm lint` 和 `git diff --check`，确认没有 BOM、乱码和空白字符问题。
 ## 注释与文档
 
 - 新增或修改函数、变量、组件、复杂逻辑代码块时，使用简洁中文注释说明业务意图、输入输出或跨模块约定。
@@ -126,7 +141,7 @@ pnpm play:dev
 完成改动后：
 
 1. 运行与改动范围相关的检查命令。
-2. 执行 `git diff --check`，确认没有空白字符错误。
+2. 执行 `git diff --check`，确认没有空白字符错误，注释错误。
 3. 使用 `git status --short` 和 `git diff --stat` 核对变更范围。
 4. 确认没有修改无关源码、配置、锁文件或项目结构。
 5. 确认没有新增子目录级 `AGENTS.md`，除非后续确有局部规则需要覆盖根级指南。
