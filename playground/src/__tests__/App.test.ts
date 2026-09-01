@@ -9,6 +9,7 @@ describe('playground App', () => {
     const wrapper = mount(App);
 
     await nextTick();
+    await nextTick();
 
     const historyButtons = wrapper.findAllComponents(GoHistoryButton);
     const clearButton = historyButtons[2]!;
@@ -35,6 +36,7 @@ describe('playground App', () => {
     expect(historyButtons[1]?.attributes('disabled')).toBeUndefined();
 
     await clearButton.trigger('click');
+    await nextTick();
     await nextTick();
 
     expect(wrapper.findAll('.game-status dd')[2]?.text()).toBe('1');

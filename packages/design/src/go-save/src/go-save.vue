@@ -161,6 +161,9 @@ const context: GoSaveContext = {
   backward,
   clear,
   onListen,
+  get version() {
+    return version.value;
+  },
   get current() {
     void version.value;
     return goHistoryData.current;

@@ -66,6 +66,44 @@ describe('goGameData', () => {
     expect(game.snapshot.latestVertex).toBeUndefined();
   });
 
+  it('updates transient state without replacing the cached reset snapshot', () => {
+    const cachedLayout = [
+      [1, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ] as const;
+    const updatedLayout = [
+      [0, 0, 0],
+      [0, -1, 0],
+      [0, 0, 0],
+    ] as const;
+    const game = new GoGameData({ size: 3, layout: cachedLayout.map(row => [...row]), player: -1 });
+
+    expect(game.update({ size: 3, layout: updatedLayout.map(row => [...row]), player: 1 })).toBe(true);
+    expect(game.layout).toEqual(updatedLayout);
+    expect(game.player).toBe(1);
+
+    expect(game.reset()).toBe(true);
+    expect(game.layout).toEqual(cachedLayout);
+    expect(game.player).toBe(-1);
+  });
+
+  it('rejects invalid resets without replacing the current or cached state', () => {
+    const game = new GoGameData({ size: 3, player: -1 });
+
+    expect(game.play('A1')).toBe(true);
+    expect(game.reset({ size: 3, layout: [[1, 0]], player: 1 })).toBe(false);
+    expect(game.getSign('A1')).toBe(-1);
+    expect(game.player).toBe(-1);
+
+    expect(game.reset()).toBe(true);
+    expect(game.layout).toEqual([
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ]);
+    expect(game.player).toBe(-1);
+  });
   it('restores the latest position from an explicit game snapshot', () => {
     const game = new GoGameData({
       size: 3,

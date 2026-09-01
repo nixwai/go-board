@@ -39,7 +39,7 @@ function pass() {
 }
 
 function resetBoard() {
-  boardRef.value?.reset(init);
+  boardRef.value?.reset();
 }
 
 function handleUpdate(event: GoBoardEvent) {

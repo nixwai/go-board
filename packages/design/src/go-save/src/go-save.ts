@@ -37,6 +37,8 @@ export interface GoSaveContext {
   backward: (step?: number) => GoGameOptions | undefined
   /** 清除全部历史记录。 */
   clear: () => void
+  /** 历史状态版本，每次历史数据或位置变化时递增。 */
+  readonly version: number
   /** 当前历史位置。 */
   readonly current: number
   /** 历史快照数量。 */

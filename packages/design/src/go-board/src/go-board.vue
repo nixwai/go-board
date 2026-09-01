@@ -34,7 +34,6 @@ function emitUpdate() {
 
 /** 保存并通知外部落子后的完整对局快照。 */
 function emitMove() {
-  goSave?.save(goSnapshot.value);
   emit('move', goSnapshot.value);
 }
 
@@ -51,6 +50,7 @@ function play(position?: GoGamePosition): boolean {
   goGameData.rotate();
   refresh();
   if (position) {
+    goSave?.save(goSnapshot.value);
     emitMove();
   }
   emitUpdate();
@@ -80,33 +80,36 @@ function clearHover() {
 defineExpose<GoBoardExposed>({ play, reset });
 
 if (goSave) {
-  /** 使用存档快照替换当前棋盘，无效快照直接拒绝。 */
-  function restore(snapshot?: GoGameOptions): boolean {
-    if (!snapshot || !goGameData.reset(snapshot)) { return false; }
+  const goSaveContext = goSave;
+
+  /** 重置棋盘后延迟补全空历史，并通过版本校验取消过期保存任务。 */
+  function resetHistory(snapshot?: GoGameOptions) {
+    if (!goGameData.reset(snapshot)) { return; }
 
     refresh();
     emitUpdate();
-    return true;
-  }
+    if (goSaveContext.length !== 0) { return; }
 
-  /** 重建时优先恢复存档；空存档使用初始化数据并创建首条快照。 */
-  function rebuild(snapshot?: GoGameOptions) {
-    if (snapshot) {
-      restore(snapshot);
-      return;
-    }
+    const version = goSaveContext.version;
+    const currentSnapshot = goSnapshot.value;
+    void nextTick(() => {
+      if (
+        version !== goSaveContext.version
+        || goSaveContext.length !== 0
+      ) {
+        return;
+      }
 
-    goGameData.reset(goGameData.cached);
-    refresh();
-    goSave?.save(goSnapshot.value);
-    emitUpdate();
+      goSaveContext.save(currentSnapshot);
+    });
   }
 
   /** 根据存档事件同步棋盘，RESET 与 SAVE 由当前操作流程直接完成。 */
   function onSaveChange(change: GoSaveChange) {
     switch (change.key) {
       case GO_SAVE_EVENT.REBUILD:
-        rebuild(change.snapshot);
+      case GO_SAVE_EVENT.CLEAR:
+        resetHistory(change.snapshot);
         break;
       case GO_SAVE_EVENT.RESET:
       case GO_SAVE_EVENT.SAVE:
@@ -114,23 +117,13 @@ if (goSave) {
       case GO_SAVE_EVENT.LOAD:
       case GO_SAVE_EVENT.FORWARD:
       case GO_SAVE_EVENT.BACKWARD:
-        restore(change.snapshot);
+        if (!change.snapshot || !goGameData.update(change.snapshot)) { break; }
+        refresh();
+        emitUpdate();
         break;
-      case GO_SAVE_EVENT.CLEAR: {
-        if (!restore(goGameData.cached)) { break; }
-
-        /** 等待 CLEAR 通知完成后再保存，避免旧事件覆盖历史控件的最新状态。 */
-        const snapshot = goSnapshot.value;
-        void nextTick(() => {
-          if (goSave?.length === 0) {
-            goSave.save(snapshot);
-          }
-        });
-        break;
-      }
     }
   }
-  goSave.onListen(onSaveChange, onBeforeUnmount);
+  goSaveContext.onListen(onSaveChange, onBeforeUnmount);
 }
 </script>
 

@@ -81,6 +81,26 @@ describe('goSave', () => {
     expect(changes).toEqual([GO_SAVE_EVENT.RESET]);
   });
 
+  it('increments the version after every successful history change and rebuild', async () => {
+    let context!: GoSaveContext;
+    const first = snapshot(1);
+    const second = snapshot(-1);
+    const Child = createChild((value) => { context = value; });
+    const wrapper = mount(GoSave, { slots: { default: () => h(Child) } });
+
+    expect(context.version).toBe(0);
+    expect(context.save(first)).toBe(true);
+    expect(context.version).toBe(1);
+    expect(context.save(second)).toBe(true);
+    expect(context.version).toBe(2);
+    expect(context.backward()).toBe(first);
+    expect(context.version).toBe(3);
+    context.clear();
+    expect(context.version).toBe(4);
+
+    await wrapper.setProps({ value: [second] });
+    expect(context.version).toBe(5);
+  });
   it('updates internal history when the controlled value changes', async () => {
     let context!: GoSaveContext;
     const first = snapshot(1);

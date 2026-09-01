@@ -353,7 +353,7 @@ describe('goBoard', () => {
     ]);
   });
 
-  it('archives the fallback board when init is invalid', () => {
+  it('archives the fallback board when init is invalid', async () => {
     const { boardWrapper, saveWrapper } = mountSavedBoard({
       size: 3,
       layout: [[1, 0]],
@@ -361,6 +361,7 @@ describe('goBoard', () => {
     });
 
     expect(boardWrapper.findAll('.chess-piece-stone')).toHaveLength(0);
+    await nextTick();
     expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
       expect.objectContaining({
         size: 3,
@@ -370,10 +371,11 @@ describe('goBoard', () => {
     ]);
   });
 
-  it('archives only successful stone moves from emitMove', () => {
+  it('archives only successful stone moves from emitMove', async () => {
     const { boardWrapper, saveWrapper } = mountSavedBoard({ size: 3 });
     const api = exposed(boardWrapper);
 
+    await nextTick();
     expect(saveWrapper.emitted('update:value')).toHaveLength(1);
     expect(api.play()).toBe(true);
     expect(saveWrapper.emitted('update:value')).toHaveLength(1);
@@ -405,12 +407,13 @@ describe('goBoard', () => {
     ]);
   });
 
-  it('clears old archives and keeps only the reset snapshot', () => {
+  it('clears old archives and keeps only the reset snapshot', async () => {
     const { boardWrapper, saveWrapper } = mountSavedBoard({ size: 3 });
     const api = exposed(boardWrapper);
     const resetLayout = emptyLayout(3);
     resetLayout[2][2] = -1;
 
+    await nextTick();
     expect(api.play('A1')).toBe(true);
     expect(api.reset({ size: 3, layout: resetLayout, player: 1, latestVertex: [2, 2] })).toBe(true);
     expect(saveWrapper.emitted('update:value')).toHaveLength(3);
@@ -446,6 +449,25 @@ describe('goBoard', () => {
     ]);
   });
 
+  it('keeps the initialized archive snapshot cached while navigating history', async () => {
+    const firstLayout = emptyLayout(3);
+    firstLayout[0][0] = 1;
+    const secondLayout = emptyLayout(3);
+    secondLayout[1][1] = -1;
+    const first = { size: 3, layout: firstLayout, player: -1 } as GoGameOptions;
+    const second = { size: 3, layout: secondLayout, player: 1 } as GoGameOptions;
+    const { boardWrapper, saveApi } = mountSavedBoard({ size: 3 }, [first, second]);
+    const api = exposed(boardWrapper);
+
+    expect(saveApi.load(0)).toBe(first);
+    await nextTick();
+    expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone-black').exists()).toBe(true);
+
+    expect(api.reset()).toBe(true);
+    await nextTick();
+    expect(boardWrapper.find('[aria-label="B2"] .chess-piece-stone-white').exists()).toBe(true);
+    expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone').exists()).toBe(false);
+  });
   it('rebuilds from the cached reset snapshot when the archive is empty', async () => {
     const cachedLayout = emptyLayout(3);
     cachedLayout[2][2] = -1;

@@ -93,8 +93,11 @@ export class GoGameData {
 
   /** 按配置重置对局，配置或规则校验失败时保持原状态，并缓存配置。 */
   reset(options?: GoGameOptions): boolean {
-    const newOptions = options || this.cachedSnapshot;
-    this.update(newOptions);
+    const newOptions = options ?? this.cachedSnapshot;
+    if (!newOptions || !this.update(newOptions)) {
+      return false;
+    }
+
     this.updateCached();
     return true;
   }
