@@ -170,6 +170,7 @@ const history = ref<GoGameOptions[]>([]);
 | --- | --- | --- | --- |
 | `disabled` | `boolean` | `false` | 是否禁用棋盘单元格及鼠标交互。禁用后仍可通过组件实例调用 `play()` 和 `reset()`。 |
 | `width` | `number \| string` | `'100%'` | 棋盘容器宽度。正数按像素处理，字符串作为 CSS 宽度值使用；无效数字或空字符串使用 `100%`。 |
+| `showCoord` | `boolean` | `false` | 是否在棋盘左侧显示从上到下递减的行坐标、下侧显示跳过字母 I 的列坐标。 |
 | `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player`、`ko` 和 `latestVertex`。 |
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。

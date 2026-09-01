@@ -6,6 +6,8 @@ export interface GoBoardProps {
   disabled?: boolean
   /** 棋盘容器宽度。 */
   width?: number | string
+  /** 是否在棋盘左侧显示行坐标、下侧显示列坐标。 */
+  showCoord?: boolean
   /** 棋盘初始化配置。 */
   init?: GoGameOptions
 }

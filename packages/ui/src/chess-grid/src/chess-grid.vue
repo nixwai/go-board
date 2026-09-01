@@ -72,12 +72,12 @@ function handleClick(x: number, y: number) {
 <style>
 .chess-grid {
   position: absolute;
-  inset: 1.5%;
+  inset: 5%;
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(v-bind('size'), minmax(0, 1fr));
-  width: calc(100% - 3%);
-  height: calc(100% - 3%);
+  width: 90%;
+  height: 90%;
 }
 
 .chess-grid-cell {

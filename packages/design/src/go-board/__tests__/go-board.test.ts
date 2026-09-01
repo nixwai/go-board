@@ -42,6 +42,15 @@ describe('goBoard', () => {
     expect(wrapper.find('.chessboard').attributes('data-testid')).toBe('go-board');
   });
 
+  it('controls chessboard coordinates through showCoord', () => {
+    const defaultWrapper = mount(GoBoard, { props: { init: { size: 9 } } });
+    const coordinateWrapper = mount(GoBoard, { props: { init: { size: 9 }, showCoord: true } });
+
+    expect(coordinateWrapper.vm.$options.props).toHaveProperty('showCoord');
+    expect(defaultWrapper.find('.chessboard-coordinates').exists()).toBe(false);
+    expect(coordinateWrapper.findAll('.chessboard-coordinates text')).toHaveLength(18);
+  });
+
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 

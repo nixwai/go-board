@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { ChessboardProps } from './chessboard';
 import { computed, useAttrs } from 'vue';
+import ChessboardCoordinates from './components/chessboard-coordinates.vue';
 import ChessboardLines from './components/chessboard-lines.vue';
 import ChessboardStars from './components/chessboard-stars.vue';
 
 defineOptions({ name: 'Chessboard', inheritAttrs: false });
-const props = withDefaults(defineProps<ChessboardProps>(), { width: '100%' });
+const props = withDefaults(defineProps<ChessboardProps>(), {
+  showCoord: false,
+  width: '100%',
+});
 const attrs = useAttrs();
 
 /** 用于网格线计数和位置计算的棋盘尺寸。 */
@@ -39,6 +43,10 @@ function normalizeWidth(value: number | string): string {
     class="chessboard"
     :style="boardStyle"
   >
+    <ChessboardCoordinates
+      v-if="props.showCoord"
+      :size="size"
+    />
     <ChessboardLines :size="size" />
     <ChessboardStars :size="size" />
     <slot />
@@ -50,7 +58,7 @@ function normalizeWidth(value: number | string): string {
   position: relative;
   box-sizing: border-box;
   aspect-ratio: 1;
-  padding: 1.5%;
+  padding: 5%;
   overflow: hidden;
   background: #dcb35c;
   border: 1px solid #a77b2f;

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import Chessboard from '../src/chessboard.vue';
@@ -7,6 +9,43 @@ function getPointCoordinates(size: number) {
 }
 
 describe('chessboard', () => {
+  it('does not render coordinates by default', () => {
+    const wrapper = mount(Chessboard, { props: { size: 19 } });
+
+    expect(wrapper.find('.chessboard-coordinates').exists()).toBe(false);
+  });
+
+  it('renders row coordinates on the left and column coordinates at the bottom', () => {
+    const wrapper = mount(Chessboard, { props: { size: 9, showCoord: true } });
+    const rowLabels = wrapper.findAll('.chessboard-coordinate-row-left');
+    const columnLabels = wrapper.findAll('.chessboard-coordinate-column-bottom');
+    const firstIntersection = 5 + ((0.5 / 9) * 90);
+
+    expect(rowLabels.map(label => label.text())).toEqual(['9', '8', '7', '6', '5', '4', '3', '2', '1']);
+    expect(columnLabels.map(label => label.text())).toEqual('ABCDEFGHJ'.split(''));
+    expect(wrapper.find('.chessboard-coordinate-row-right').exists()).toBe(false);
+    expect(wrapper.find('.chessboard-coordinate-column-top').exists()).toBe(false);
+    expect(rowLabels[0]?.attributes()).toMatchObject({ x: '2.5', y: `${firstIntersection}` });
+    expect(columnLabels[0]?.attributes()).toMatchObject({ x: `${firstIntersection}`, y: '97.5' });
+  });
+
+  it('keeps the board and visual layers at a fixed five-percent inset', () => {
+    const boardSource = readFileSync(resolve(process.cwd(), 'packages/ui/src/chessboard/src/chessboard.vue'), 'utf8');
+    const boardStyle = boardSource.match(/\.chessboard\s*\{([\s\S]*?)\}/)?.[1] ?? '';
+    expect(boardStyle).toMatch(/padding:\s*5%/);
+
+    for (const component of ['chessboard-lines.vue', 'chessboard-stars.vue']) {
+      const source = readFileSync(
+        resolve(process.cwd(), `packages/ui/src/chessboard/src/components/${component}`),
+        'utf8',
+      );
+      const style = source.match(/\.(?:chessboard-lines|chessboard-stars)\s*\{([\s\S]*?)\}/)?.[1] ?? '';
+      expect(style).toMatch(/inset:\s*5%/);
+      expect(style).toMatch(/width:\s*90%/);
+      expect(style).toMatch(/height:\s*90%/);
+    }
+  });
+
   it('renders the requested size and width', () => {
     const wrapper = mount(Chessboard, { props: { size: 3, width: 240 } });
 

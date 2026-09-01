@@ -12,6 +12,7 @@ defineOptions({ name: 'GoBoard' });
 
 const props = withDefaults(defineProps<GoBoardProps>(), {
   disabled: false,
+  showCoord: false,
   width: '100%',
 });
 
@@ -150,6 +151,7 @@ if (goSave) {
   <Chessboard
     :size="goSnapshot.size"
     :width="props.width"
+    :show-coord="props.showCoord"
     role="grid"
     :aria-rowcount="goSnapshot.size"
     :aria-colcount="goSnapshot.size"

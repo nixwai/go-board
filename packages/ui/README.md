@@ -113,7 +113,7 @@ import { withInstall } from '@go-board/ui';
 
 ```vue
 <template>
-  <Chessboard :size="9" :width="360">
+  <Chessboard :size="9" :width="360" show-coord>
     <!-- 棋盘内容，例如 ChessGrid -->
   </Chessboard>
 </template>
@@ -125,8 +125,9 @@ import { withInstall } from '@go-board/ui';
 | --- | --- | --- | --- |
 | `size` | 棋盘边长，同时决定网格线和星位数量 | `number \| string` | — |
 | `width` | 棋盘宽度；正数按像素处理，字符串作为 CSS 宽度使用 | `number \| string` | `'100%'` |
+| `showCoord` | 是否在棋盘左侧显示行坐标、下侧显示列坐标 | `boolean` | `false` |
 
-`size` 只接受正整数或可转换为正整数的字符串，无效值按 `1` 处理。`width` 传入非正数、非有限数字或空字符串时按 `100%` 处理。
+`size` 只接受正整数或可转换为正整数的字符串，无效值按 `1` 处理。`width` 传入非正数、非有限数字或空字符串时按 `100%` 处理。棋盘始终使用固定 `5%` 内部边距。启用 `showCoord` 后，在左侧显示从上到下递减的行号，在下侧显示跳过字母 I 的列标。
 
 小于 9 路的奇数棋盘绘制中心星位；9～12 路绘制四角星位，奇数棋盘额外绘制中心星位；13 路及以上的奇数棋盘绘制九个星位，偶数棋盘绘制四角星位。
 

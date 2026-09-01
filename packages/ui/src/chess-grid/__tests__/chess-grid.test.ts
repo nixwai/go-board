@@ -36,9 +36,9 @@ describe('chessGrid', () => {
     const style = source.match(/\.chess-grid\s*\{([\s\S]*?)\}/)?.[1] ?? '';
 
     expect(style).toMatch(/position:\s*absolute/);
-    expect(style).toMatch(/inset:\s*1\.5%/);
-    expect(style).toMatch(/width:\s*calc\(100% - 3%\)/);
-    expect(style).toMatch(/height:\s*calc\(100% - 3%\)/);
+    expect(style).toMatch(/inset:\s*5%/);
+    expect(style).toMatch(/width:\s*90%/);
+    expect(style).toMatch(/height:\s*90%/);
   });
 
   it('forwards DOM attributes to the grid root', () => {
