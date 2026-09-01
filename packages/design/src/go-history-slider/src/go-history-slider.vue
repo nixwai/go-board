@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { GoSliderProps } from './go-slider';
+import type { GoHistorySliderProps } from './go-history-slider';
 
 import { computed, inject, onBeforeUnmount, ref, useAttrs } from 'vue';
 import { GO_SAVE_INJECTION } from '../../go-save/src/keys';
 
 defineOptions({
-  name: 'GoSlider',
+  name: 'GoHistorySlider',
   inheritAttrs: false,
 });
 
-const props = withDefaults(defineProps<GoSliderProps>(), { disabled: false });
+const props = withDefaults(defineProps<GoHistorySliderProps>(), { disabled: false });
 const attrs = useAttrs();
 const goSave = inject(GO_SAVE_INJECTION);
 const current = ref(-1);
@@ -35,7 +35,7 @@ function loadSnapshot(event: Event) {
 <template>
   <input
     v-bind="attrs"
-    class="go-slider"
+    class="go-history-slider"
     type="range"
     step="1"
     :min="minimum"
@@ -47,16 +47,16 @@ function loadSnapshot(event: Event) {
 </template>
 
 <style scoped>
-.go-slider {
+.go-history-slider {
   width: 100%;
   margin: 0;
 }
 
-.go-slider:not(:disabled) {
+.go-history-slider:not(:disabled) {
   cursor: pointer;
 }
 
-.go-slider:disabled {
+.go-history-slider:disabled {
   cursor: not-allowed;
 }
 </style>

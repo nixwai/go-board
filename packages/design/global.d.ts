@@ -4,7 +4,7 @@ declare module 'vue' {
     GoBoard: typeof import('./src/go-board')['GoBoard']
     GoHistoryButton: typeof import('./src/go-history-button')['GoHistoryButton']
     GoSave: typeof import('./src/go-save')['GoSave']
-    GoSlider: typeof import('./src/go-slider')['GoSlider']
+    GoHistorySlider: typeof import('./src/go-history-slider')['GoHistorySlider']
   }
 }
 

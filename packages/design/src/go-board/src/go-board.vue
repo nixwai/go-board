@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { GoGameOptions, GoGamePosition, GoGameSnapshot, GoVertex } from '@go-board/tool';
 import type { GoSaveChange } from '../../go-save/src/go-save';
-import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
+import type { GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
@@ -16,8 +16,8 @@ const props = withDefaults(defineProps<GoBoardProps>(), {
 });
 
 const emit = defineEmits<{
-  update: [payload: GoBoardEvent]
-  move: [payload: GoBoardEvent]
+  update: [payload: GoGameSnapshot]
+  move: [payload: GoGameSnapshot]
 }>();
 
 const goSave = inject(GO_SAVE_INJECTION);

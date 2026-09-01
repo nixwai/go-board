@@ -5,8 +5,8 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
 import GoSave from '../../go-save/src/go-save.vue';
-import { GoSlider as InstallableGoSlider } from '../index';
-import GoSlider from '../src/go-slider.vue';
+import { GoHistorySlider as InstallableGoHistorySlider } from '../index';
+import GoHistorySlider from '../src/go-history-slider.vue';
 
 function snapshot(player: 1 | -1): GoGameOptions {
   return { size: 3, player };
@@ -15,19 +15,19 @@ function snapshot(player: 1 | -1): GoGameOptions {
 function mountSavedSlider(value?: GoGameOptions[]) {
   const wrapper = mount(GoSave, {
     props: { value },
-    slots: { default: () => h(GoSlider) },
+    slots: { default: () => h(GoHistorySlider) },
   });
 
   return {
     saveApi: wrapper.vm as unknown as GoSaveExposed,
-    slider: wrapper.findComponent(GoSlider),
+    slider: wrapper.findComponent(GoHistorySlider),
     wrapper,
   };
 }
 
-describe('goSlider', () => {
+describe('goHistorySlider', () => {
   it('renders a range input with stable root attributes and accessibility semantics', () => {
-    const wrapper = mount(GoSlider, {
+    const wrapper = mount(GoHistorySlider, {
       attrs: {
         'aria-label': '读档进度',
         'class': 'custom-slider',
@@ -42,7 +42,7 @@ describe('goSlider', () => {
     expect(wrapper.attributes('step')).toBe('1');
     expect(wrapper.attributes('aria-label')).toBe('读档进度');
     expect(wrapper.attributes('data-testid')).toBe('history-slider');
-    expect(wrapper.classes()).toContain('go-slider');
+    expect(wrapper.classes()).toContain('go-history-slider');
     expect(wrapper.classes()).toContain('custom-slider');
     expect(wrapper.attributes('style')).toContain('color: red');
     expect(wrapper.attributes('disabled')).toBeDefined();
@@ -60,7 +60,7 @@ describe('goSlider', () => {
     expect((slider.element as HTMLInputElement).value).toBe('1');
     expect(slider.attributes('disabled')).toBeUndefined();
 
-    const input = wrapper.get('input.go-slider');
+    const input = wrapper.get('input.go-history-slider');
     await input.setValue('0');
 
     expect((input.element as HTMLInputElement).value).toBe('0');
@@ -98,21 +98,21 @@ describe('goSlider', () => {
     const onInput = vi.fn();
     const wrapper = mount(GoSave, {
       props: { value: [snapshot(1), snapshot(-1)] },
-      slots: { default: () => h(GoSlider, { onInput }) },
+      slots: { default: () => h(GoHistorySlider, { onInput }) },
     });
 
-    await wrapper.get('input.go-slider').setValue('0');
+    await wrapper.get('input.go-history-slider').setValue('0');
 
     expect(onInput).toHaveBeenCalledOnce();
-    expect(InstallableGoSlider.install).toBeTypeOf('function');
+    expect(InstallableGoHistorySlider.install).toBeTypeOf('function');
   });
 
   it('respects the disabled prop while history snapshots exist', () => {
     const wrapper = mount(GoSave, {
       props: { value: [snapshot(1)] },
-      slots: { default: () => h(GoSlider, { disabled: true }) },
+      slots: { default: () => h(GoHistorySlider, { disabled: true }) },
     });
 
-    expect(wrapper.findComponent(GoSlider).attributes('disabled')).toBeDefined();
+    expect(wrapper.findComponent(GoHistorySlider).attributes('disabled')).toBeDefined();
   });
 });

@@ -76,7 +76,7 @@ import { GoBoard } from '@go-board/design';
 ```vue
 <script setup lang="ts">
 import type {
-  GoBoardEvent,
+  GoGameSnapshot,
   GoBoardInstance,
   GoGameOptions,
 } from '@go-board/design';
@@ -103,13 +103,13 @@ function resetBoard() {
   boardRef.value?.reset();
 }
 
-function handleMove(event: GoBoardEvent) {
+function handleMove(event: GoGameSnapshot) {
   console.log('落子位置：', event.latestVertex);
   console.log('落子后的棋盘：', event.layout);
   console.log('下一执棋方：', event.player);
 }
 
-function handleUpdate(event: GoBoardEvent) {
+function handleUpdate(event: GoGameSnapshot) {
   console.log('棋盘已更新：', event.layout, event.player);
 }
 </script>
@@ -198,12 +198,9 @@ const init = {
 
 | 事件 | 参数 | 说明 |
 | --- | --- | --- |
-| `move` | `GoBoardEvent` | 合法落子后触发，包含 `latestVertex` 及切换执棋方后的完整棋局快照。 |
-| `update` | `GoBoardEvent` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照；停一手时保留上一手 `latestVertex`。 |
+| `move` | `GoGameSnapshot` | 合法落子后触发，包含 `latestVertex` 及切换执棋方后的完整棋局快照。 |
+| `update` | `GoGameSnapshot` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照；停一手时保留上一手 `latestVertex`。 |
 
-```ts
-type GoBoardEvent = GoGameSnapshot;
-```
 
 #### Expose 方法
 

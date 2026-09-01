@@ -1,7 +1,4 @@
-import type { GoGameOptions, GoGamePosition, GoGameSnapshot } from '@go-board/tool';
-
-/** 棋盘状态事件的数据结构。 */
-export type GoBoardEvent = GoGameSnapshot;
+import type { GoGameOptions, GoGamePosition } from '@go-board/tool';
 
 /** 围棋棋盘组件的输入属性。 */
 export interface GoBoardProps {

@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import type {
-  GoBoardEvent,
   GoBoardInstance,
   GoGameOptions,
+  GoGameSnapshot,
 } from '@go-board/design';
 
 import {
   GoBoard,
   GoHistoryButton,
+  GoHistorySlider,
   GoSave,
-  GoSlider,
   normalizePosition,
 } from '@go-board/design';
 import { computed, ref } from 'vue';
 
 const boardRef = ref<GoBoardInstance>();
 const history = ref<GoGameOptions[]>([]);
-const snapshot = ref<GoBoardEvent>();
+const snapshot = ref<GoGameSnapshot>();
 
 const init: GoGameOptions = {
   size: 9,
@@ -38,7 +38,7 @@ function pass() {
   boardRef.value?.play();
 }
 
-function handleUpdate(event: GoBoardEvent) {
+function handleUpdate(event: GoGameSnapshot) {
   snapshot.value = event;
 }
 </script>
@@ -88,7 +88,7 @@ function handleUpdate(event: GoBoardEvent) {
 
           <div class="history-panel">
             <span id="history-label">棋局历史</span>
-            <GoSlider aria-labelledby="history-label" />
+            <GoHistorySlider aria-labelledby="history-label" />
           </div>
         </div>
 
