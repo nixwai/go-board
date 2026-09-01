@@ -1,12 +1,13 @@
 import type { App, Component, Plugin } from 'vue';
 import { version } from '../package.json';
 import { GoBoard } from './go-board';
+import { GoHistoryButton } from './go-history-button';
 import { GoSave } from './go-save';
 import { GoSlider } from './go-slider';
 
 const INSTALLED_KEY = Symbol('INSTALLED_KEY');
 
-const installer = makeInstaller([GoBoard, GoSave, GoSlider]);
+const installer = makeInstaller([GoBoard, GoHistoryButton, GoSave, GoSlider]);
 
 export default installer;
 

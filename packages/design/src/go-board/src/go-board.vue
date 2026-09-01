@@ -5,7 +5,7 @@ import type { GoBoardEvent, GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
-import { inject, onBeforeUnmount, ref } from 'vue';
+import { inject, nextTick, onBeforeUnmount, ref } from 'vue';
 import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../../go-save/src/keys';
 
 defineOptions({ name: 'GoBoard' });
@@ -116,9 +116,18 @@ if (goSave) {
       case GO_SAVE_EVENT.BACKWARD:
         restore(change.snapshot);
         break;
-      case GO_SAVE_EVENT.CLEAR:
-        restore(goGameData.cached);
+      case GO_SAVE_EVENT.CLEAR: {
+        if (!restore(goGameData.cached)) { break; }
+
+        /** 等待 CLEAR 通知完成后再保存，避免旧事件覆盖历史控件的最新状态。 */
+        const snapshot = goSnapshot.value;
+        void nextTick(() => {
+          if (goSave?.length === 0) {
+            goSave.save(snapshot);
+          }
+        });
         break;
+      }
     }
   }
   goSave.onListen(onSaveChange, onBeforeUnmount);

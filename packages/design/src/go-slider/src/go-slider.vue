@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { GoSaveChange } from '../../go-save/src/go-save';
 import type { GoSliderProps } from './go-slider';
 
 import { computed, inject, onBeforeUnmount, ref, useAttrs } from 'vue';
@@ -21,19 +20,15 @@ const maximum = computed(() => length.value - 1);
 const isDisabled = computed(() => props.disabled || !goSave || length.value === 0);
 
 /** 根据存档事件同步滑动范围和当前历史位置。 */
-function syncHistory(change: GoSaveChange) {
+goSave?.onListen((change) => {
   current.value = change.current;
   length.value = change.length;
-}
+}, onBeforeUnmount);
 
 /** 将滑动输入值映射为 GoSave 的历史快照位置。 */
 function loadSnapshot(event: Event) {
   const input = event.currentTarget as HTMLInputElement;
   goSave?.load(Number(input.value));
-}
-
-if (goSave) {
-  goSave.onListen(syncHistory, onBeforeUnmount);
 }
 </script>
 

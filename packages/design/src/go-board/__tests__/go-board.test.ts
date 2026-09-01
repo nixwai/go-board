@@ -383,8 +383,8 @@ describe('goBoard', () => {
     expect(saveWrapper.emitted('update:value')).toHaveLength(2);
   });
 
-  it('restores the cached board when the archive is cleared', async () => {
-    const { boardWrapper, saveApi } = mountSavedBoard({ size: 3 });
+  it('restores and re-archives the cached board when the archive is cleared', async () => {
+    const { boardWrapper, saveApi, saveWrapper } = mountSavedBoard({ size: 3 });
     const api = exposed(boardWrapper);
 
     expect(api.play('A1')).toBe(true);
@@ -396,6 +396,13 @@ describe('goBoard', () => {
     expect(boardWrapper.find('[aria-label="A1"] .chess-piece-stone').exists()).toBe(false);
     expect(boardWrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     expect(boardWrapper.emitted('update')).toHaveLength(3);
+    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+      expect.objectContaining({
+        size: 3,
+        layout: emptyLayout(3),
+        player: 1,
+      }),
+    ]);
   });
 
   it('clears old archives and keeps only the reset snapshot', () => {

@@ -71,24 +71,30 @@ export class GoGameData {
     this.cachedSnapshot = this.snapshot;
   }
 
-  /** 按配置重置对局，配置或规则校验失败时保持原状态。 */
-  reset(options?: GoGameOptions): boolean {
-    const newOptions = options || this.cachedSnapshot;
-    const size = normalizeSize(newOptions?.size ?? this.boardSize);
-    if (newOptions?.layout && !isValidLayout(newOptions.layout, size)) {
+  /** 按配置更新对局，配置或规则校验失败时保持原状态。 */
+  update(options: GoGameOptions): boolean {
+    const size = normalizeSize(options.size ?? this.boardSize);
+    if (options.layout && !isValidLayout(options.layout, size)) {
       return false;
     }
 
-    const layout = newOptions?.layout || createLayout(size);
-    const candidate = new GoBoardData(layout, newOptions?.ko);
+    const layout = options.layout || createLayout(size);
+    const candidate = new GoBoardData(layout, options.ko);
     if (!candidate.isValid()) {
       return false;
     }
 
     this.boardSize = size;
     this.boardData = candidate;
-    this.current = normalizePlayer(newOptions?.player);
-    this.latestVertex = this.hasStone(newOptions?.latestVertex) ? cloneVertex(newOptions!.latestVertex) : undefined;
+    this.current = normalizePlayer(options.player);
+    this.latestVertex = this.hasStone(options.latestVertex) ? cloneVertex(options.latestVertex) : undefined;
+    return true;
+  }
+
+  /** 按配置重置对局，配置或规则校验失败时保持原状态，并缓存配置。 */
+  reset(options?: GoGameOptions): boolean {
+    const newOptions = options || this.cachedSnapshot;
+    this.update(newOptions);
     this.updateCached();
     return true;
   }
