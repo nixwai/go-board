@@ -1,6 +1,6 @@
 # Go Board
 
-基于 Vue 3 和 TypeScript 的围棋棋盘组件库。`@go-board/design` 当前公开提供 `GoBoard` 组件，并重新导出 `@go-board/tool` 的围棋规则类型、状态管理器与工具函数。
+基于 Vue 3 和 TypeScript 的围棋棋盘组件库。`@go-board/design` 当前公开提供 `GoBoard`、`GoSave`、`GoHistoryButton` 和 `GoHistorySlider` 组件，并重新导出 `@go-board/tool` 的围棋规则类型、状态管理器与工具函数。
 
 ## 特性
 
@@ -10,6 +10,8 @@
 - 支持鼠标悬停预览、点击落子、提子、自杀手和立即回提校验。
 - 支持标记最近一次落子，并可禁用全部棋盘交互。
 - 支持通过模板引用调用落子、停一手和重置方法。
+- 支持通过 `GoSave` 保存、加载和浏览棋局历史，并支持受控的 `v-model:value`。
+- 提供历史记录控制按钮和滑动输入条，可与 `GoSave` 组合使用。
 - 支持单组件导入或全量注册。
 - 支持 TypeScript 类型导出和原生 DOM 属性透传。
 
@@ -132,6 +134,30 @@ function handleUpdate(event: GoGameSnapshot) {
 </template>
 ```
 
+### 历史记录示例
+
+`GoSave` 作为容器包裹 `GoBoard` 及历史控制组件后，会自动保存落子快照，并在切换历史记录时同步棋盘；也可以通过 `v-model:value` 读取或替换全部历史快照。
+
+```vue
+<script setup lang="ts">
+import type { GoGameOptions } from '@go-board/design';
+
+import { GoBoard, GoHistoryButton, GoHistorySlider, GoSave } from '@go-board/design';
+import { ref } from 'vue';
+
+const history = ref<GoGameOptions[]>([]);
+</script>
+
+<template>
+  <GoSave v-model:value="history">
+    <GoBoard :init="{ size: 9 }" aria-label="九路围棋棋盘" />
+    <GoHistorySlider aria-label="棋局历史" />
+    <GoHistoryButton :step="-1">后退</GoHistoryButton>
+    <GoHistoryButton :step="1">前进</GoHistoryButton>
+    <GoHistoryButton :step="0">清空</GoHistoryButton>
+  </GoSave>
+</template>
+```
 ## 组件
 
 ### GoBoard
@@ -167,7 +193,7 @@ interface GoGameOptions {
 | `size` | `number \| string` | `19` | 棋盘边长，支持 1～25 路。 |
 | `layout` | `GoLayout` | 空棋盘 | 初始棋盘布局，必须是 `size × size` 的二维数组，且现有棋块必须至少有一口气。 |
 | `player` | `PlayerSign` | `1` | 当前执棋方：`1` 表示黑方，`-1` 表示白方。 |
-| `ko` | `KoInfo` | `{ sign: 0, vertex: [-1, -1] }` | 初始劫子信息，包含受限方和劫点。 |
+| `ko` | `KoInfo` | `undefined` | 初始劫子信息，包含受限方和劫点；不传时表示无劫。 |
 | `latestVertex` | `GoVertex` | — | 最新一手棋子的棋盘坐标；坐标无棋子或越界时自动置空。 |
 
 棋盘布局中的棋子标记如下：
@@ -202,6 +228,8 @@ const init = {
 | `update` | `GoGameSnapshot` | 合法落子、停一手或重置成功后触发，包含最新完整棋局快照；停一手时保留上一手 `latestVertex`。 |
 
 
+当 `GoBoard` 位于 `GoSave` 默认插槽内时，成功落子会自动保存快照；通过历史组件切换快照后，棋盘会自动同步。停一手只更新棋盘状态，不新增历史快照。
+
 #### Expose 方法
 
 通过模板 `ref` 获取组件实例后，可以调用以下方法：
@@ -221,11 +249,61 @@ boardRef.value?.play();
 boardRef.value?.reset({ size: 13, player: 1 });
 ```
 
+### GoSave
+
+存档容器组件，使用 `value` 初始化或受控管理棋局快照列表，并通过默认插槽为子组件提供历史记录上下文。`GoBoard`、`GoHistoryButton` 和 `GoHistorySlider` 放在其默认插槽内时会自动协同工作。
+
+#### Props
+
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `value` | `GoGameOptions[]` | `[]` | 初始化或受控的历史快照列表；组件只复制快照列表，不深拷贝快照对象。 |
+
+#### Events
+
+| 事件 | 参数 | 说明 |
+| --- | --- | --- |
+| `update:value` | `GoGameOptions[]` | 历史快照列表变化时触发，可配合 `v-model:value` 使用。 |
+
+#### Expose 方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+| --- | --- | --- | --- |
+| `save` | `snapshot: GoGameOptions`<br>`position?: number` | `boolean` | 插入快照并丢弃插入位置之后的历史。 |
+| `reset` | `snapshot: GoGameOptions` | `boolean` | 清空历史并保存一条新的快照。 |
+| `load` | `position: number` | `GoGameOptions \| undefined` | 跳转到指定历史位置。 |
+| `forward` | `step?: number` | `GoGameOptions \| undefined` | 向前移动指定步数，默认 1 步。 |
+| `backward` | `step?: number` | `GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步。 |
+| `clear` | 无 | `void` | 清除全部历史记录。 |
+| `onListen` | `listener: GoSaveChangeListener`<br>`onBeforeMount: Function` | `() => void` | 注册历史变化监听，并在组件卸载前自动注销。 |
+
+### GoHistoryButton
+
+历史记录控制按钮，必须放在 `GoSave` 默认插槽内使用。`step` 为正数时前进，为负数时后退，`0` 清空历史；非整数会使按钮禁用。未提供默认插槽内容时，按钮文本按步数显示为“前进”“后退”或“清空”。
+
+#### Props
+
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `disabled` | `boolean` | `false` | 是否禁用按钮。 |
+| `step` | `number` | `-1` | 有符号整数步数；正数前进，负数后退，`0` 清空历史。 |
+
+### GoHistorySlider
+
+历史快照滑动输入条，必须放在 `GoSave` 默认插槽内使用。滑块位置对应历史快照的绝对索引；无历史记录时自动禁用。
+
+#### Props
+
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `disabled` | `boolean` | `false` | 是否禁用滑块。 |
+
+`GoHistoryButton` 和 `GoHistorySlider` 会透传原生 DOM 属性、`class`、`style` 及事件，可通过 `aria-label` 或 `aria-labelledby` 补充无障碍名称。
 ## 其他
 
 ### @go-board/tool
 
-棋局状态管理、不可变棋盘规则实例、坐标归一化、布局创建与校验工具，均已由 `@go-board/design` 重新导出，可以直接引入使用。
+棋局状态管理、不可变棋盘规则实例、棋局历史记录、坐标归一化、布局创建与校验工具，均已由 `@go-board/design` 重新导出，可以直接引入使用。
 
 相关使用方法请查看相应文档：[@go-board/tool](https://github.com/nixwai/go-board/blob/main/packages/tool/README.md)
 

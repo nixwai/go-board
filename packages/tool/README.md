@@ -101,7 +101,7 @@ interface GoGameOptions {
 | `size` | `number \| string` | 棋盘边长，最终会被截断并限制在 `1`～`25`。 | `19` |
 | `layout` | `GoLayout` | 初始棋盘布局，必须是 `size × size` 的二维数组，且现有棋块必须至少有一口气。 | 空棋盘 |
 | `player` | `PlayerSign` | 当前执棋方：`1` 黑方，`-1` 白方。 | `1` |
-| `ko` | `KoInfo` | 初始劫子信息，包含受限方和劫点。 | `{ sign: 0, vertex: [-1, -1] }` |
+| `ko` | `KoInfo` | 初始劫子信息，包含受限方和劫点；不传时表示无劫。 | `undefined` |
 | `latestVertex` | `GoVertex` | 最新一手棋子的棋盘坐标；坐标无棋子或越界时自动置空。 | `undefined` |
 
 构造配置无效时会回退到对应尺寸的空棋盘和黑方执棋。
@@ -113,7 +113,8 @@ interface GoGameOptions {
 | `board` | `GoBoardData` | 当前规则实例的副本。 |
 | `size` | `number` | 当前棋盘边长。 |
 | `player` | `PlayerSign` | 当前执棋方。 |
-| `ko` | `KoInfo` | 当前劫子信息的副本。 |
+| `ko` | `KoInfo \| undefined` | 当前劫子信息的副本；无劫时返回 `undefined`。 |
+| `cached` | `GoGameSnapshot` | 最近一次通过 `reset()` 成功缓存的完整对局快照。 |
 | `layout` | `GoLayout` | 当前棋盘布局的副本。修改返回值不会影响棋局。 |
 | `snapshot` | `GoGameSnapshot` | 当前棋盘边长、布局、执棋方、劫子信息和最新落点的完整副本。 |
 
@@ -121,7 +122,8 @@ interface GoGameOptions {
 
 | 方法 | 参数 | 返回值 | 说明 |
 | --- | --- | --- | --- |
-| `reset` | `options?: GoGameOptions` | `boolean` | 按配置重置棋局。布局或规则校验失败时返回 `false` 并保留原状态；无效 `latestVertex` 会被置空；不传参数时恢复最近一次有效配置。 |
+| `update` | `options: GoGameOptions` | `boolean` | 按配置更新当前棋局但不更新 `reset()` 使用的缓存；布局或规则校验失败时返回 `false` 并保留原状态；无效 `latestVertex` 会被置空。 |
+| `reset` | `options?: GoGameOptions` | `boolean` | 按配置重置棋局并更新缓存。布局或规则校验失败时返回 `false` 并保留原状态；无效 `latestVertex` 会被置空；不传参数时恢复最近一次有效配置。 |
 | `clear` | `size?: number \| string`<br>`next?: PlayerSign` | `void` | 清空棋盘，并设置棋盘边长和执棋方；不会更新 `reset()` 使用的最近有效配置。 |
 | `play` | `position: GoGamePosition`<br>`player?: PlayerSign` | `boolean` | 尝试落子并执行占位、提子、自杀手和立即回提校验。成功后更新 `latestVertex`，但不会自动切换执棋方；可选 `player` 会在合法性预检通过后写入当前执棋方。 |
 | `rotate` | 无 | `void` | 在黑方和白方之间切换执棋方。 |
@@ -157,6 +159,39 @@ if (game.isLegal('C3') && game.play('C3')) {
 }
 ```
 
+### `GoHistoryData`
+
+`GoHistoryData` 按顺序保存 `GoGameOptions` 快照，并维护当前浏览位置。构造时默认定位到最后一条快照；历史为空时当前位置为 `-1`。历史容器会复制传入数组，但快照对象本身不会深拷贝。
+
+```ts
+import { GoHistoryData } from '@go-board/tool';
+
+const history = new GoHistoryData([
+  { size: 9, player: 1 },
+  { size: 9, player: -1 },
+]);
+
+history.backward();
+const current = history.snapshot;
+history.forward();
+history.jump(0);
+history.insert({ size: 9, player: 1 });
+```
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `length` | `number` | 历史快照数量。 |
+| `current` | `number` | 当前历史位置；空历史为 `-1`。 |
+| `snapshot` | `GoGameOptions \| undefined` | 当前历史位置对应的快照。 |
+| `snapshots` | `GoGameOptions[]` | 全部历史快照；返回内部数组，快照对象不复制。 |
+
+| 方法 | 参数 | 返回值 | 说明 |
+| --- | --- | --- | --- |
+| `clear` | 无 | `void` | 清空全部历史并将当前位置设为 `-1`。 |
+| `backward` | `step?: number` | `GoGameOptions \| undefined` | 向前移动指定步数，默认 1 步；步数必须为正整数。 |
+| `forward` | `step?: number` | `GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步；步数必须为正整数。 |
+| `jump` | `position: number` | `GoGameOptions \| undefined` | 跳转到指定历史位置；越界或非整数时保持当前位置不变。 |
+| `insert` | `snapshot: GoGameOptions`<br>`position?: number` | `boolean` | 在指定位置插入快照，并丢弃该位置之后的全部历史；默认插入当前位置之后。 |
 ## 创建函数
 
 | 函数 | 参数 | 返回值 | 说明 |
