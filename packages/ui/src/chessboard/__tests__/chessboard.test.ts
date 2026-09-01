@@ -15,20 +15,18 @@ describe('chessboard', () => {
     expect(wrapper.find('.chessboard-coordinates').exists()).toBe(false);
   });
 
-  it('renders row coordinates on the left and right with a fixed five-percent inset', () => {
+  it('renders row coordinates on the left and column coordinates at the bottom', () => {
     const wrapper = mount(Chessboard, { props: { size: 9, showCoord: true } });
-    const labels = wrapper.findAll('.chessboard-coordinates text');
-
-    expect(labels).toHaveLength(18);
-    expect(labels.map(label => label.text())).toEqual(
-      ['9', '8', '7', '6', '5', '4', '3', '2', '1'].flatMap(label => [label, label]),
-    );
-    expect(wrapper.find('.chessboard-coordinate-column-top').exists()).toBe(false);
-    expect(wrapper.find('.chessboard-coordinate-column-bottom').exists()).toBe(false);
-
-    const firstRow = wrapper.find('.chessboard-coordinate-row-left');
+    const rowLabels = wrapper.findAll('.chessboard-coordinate-row-left');
+    const columnLabels = wrapper.findAll('.chessboard-coordinate-column-bottom');
     const firstIntersection = 5 + ((0.5 / 9) * 90);
-    expect(firstRow.attributes()).toMatchObject({ x: '2.5', y: `${firstIntersection}` });
+
+    expect(rowLabels.map(label => label.text())).toEqual(['9', '8', '7', '6', '5', '4', '3', '2', '1']);
+    expect(columnLabels.map(label => label.text())).toEqual('ABCDEFGHJ'.split(''));
+    expect(wrapper.find('.chessboard-coordinate-row-right').exists()).toBe(false);
+    expect(wrapper.find('.chessboard-coordinate-column-top').exists()).toBe(false);
+    expect(rowLabels[0]?.attributes()).toMatchObject({ x: '2.5', y: `${firstIntersection}` });
+    expect(columnLabels[0]?.attributes()).toMatchObject({ x: `${firstIntersection}`, y: '97.5' });
   });
 
   it('keeps the board and visual layers at a fixed five-percent inset', () => {
