@@ -1,7 +1,7 @@
 {
   "name": "@go-board/design",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "围棋棋盘组件库",
   "author": "nixwai",
   "license": "MIT",

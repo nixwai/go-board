@@ -1,7 +1,7 @@
 {
   "name": "@go-board/tool",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Go Board 工具库",
   "author": "nixwai",
   "license": "MIT",
