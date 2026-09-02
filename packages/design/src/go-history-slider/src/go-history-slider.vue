@@ -11,16 +11,20 @@ defineOptions({
 
 const props = withDefaults(defineProps<GoHistorySliderProps>(), { disabled: false });
 const attrs = useAttrs();
-const { current, goSave, length } = useGoSave();
+const {
+  current,
+  snapshotLen,
+  loadSnapshot,
+} = useGoSave();
 
-const minimum = computed(() => length.value > 0 ? 0 : -1);
-const maximum = computed(() => length.value - 1);
-const isDisabled = computed(() => props.disabled || !goSave || length.value === 0);
+const minimum = computed(() => snapshotLen.value > 0 ? 0 : -1);
+const maximum = computed(() => snapshotLen.value - 1);
+const isDisabled = computed(() => props.disabled || !snapshotLen);
 
 /** 将滑动输入值映射为 GoSave 的历史快照位置。 */
-function loadSnapshot(event: Event) {
+function handleInput(event: Event) {
   const input = event.currentTarget as HTMLInputElement;
-  goSave?.load(Number(input.value));
+  loadSnapshot(Number(input.value));
 }
 </script>
 
@@ -34,7 +38,7 @@ function loadSnapshot(event: Event) {
     :max="maximum"
     :value="current"
     :disabled="isDisabled"
-    @input="loadSnapshot"
+    @input="handleInput"
   >
 </template>
 

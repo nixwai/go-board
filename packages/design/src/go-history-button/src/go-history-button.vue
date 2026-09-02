@@ -21,7 +21,13 @@ defineSlots<{
 
 const attrs = useAttrs();
 
-const { current, goSave, length } = useGoSave();
+const {
+  current,
+  snapshotLen,
+  clearSnapshots,
+  forwardSnapshot,
+  backwardSnapshot,
+} = useGoSave();
 
 const normalizedStep = computed(() => Number.isInteger(props.step) ? props.step : undefined);
 
@@ -34,14 +40,14 @@ const defaultLabel = computed(() => {
 });
 
 const isDisabled = computed(() => {
-  if (props.disabled || !goSave || normalizedStep.value === undefined || length.value === 0) {
+  if (props.disabled || normalizedStep.value === undefined || !snapshotLen.value) {
     return true;
   }
 
   if (normalizedStep.value === 0) { return false; }
 
   const target = current.value + normalizedStep.value;
-  return target < 0 || target >= length.value;
+  return target < 0 || target >= snapshotLen.value;
 });
 
 /** 按有符号步数控制历史记录前进或后退。 */
@@ -50,16 +56,16 @@ function changeHistory() {
   if (isDisabled.value || step === undefined) { return; }
   // 清空历史
   if (step === 0) {
-    goSave?.clear();
+    clearSnapshots();
     return;
   }
   // 前进
   if (step > 0) {
-    goSave?.forward(step);
+    forwardSnapshot(step);
     return;
   }
   // 后退
-  goSave?.backward(Math.abs(step));
+  backwardSnapshot(Math.abs(step));
 }
 </script>
 

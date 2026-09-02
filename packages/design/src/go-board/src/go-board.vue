@@ -5,8 +5,9 @@ import type { GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
-import { inject, nextTick, onBeforeUnmount, ref } from 'vue';
-import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../../go-save/src/keys';
+import { nextTick, ref } from 'vue';
+import { useGoSave } from '../../composables/use-go-save';
+import { GO_SAVE_EVENT } from '../../go-save/src/keys';
 
 defineOptions({ name: 'GoBoard' });
 
@@ -21,24 +22,14 @@ const emit = defineEmits<{
   move: [payload: GoGameSnapshot]
 }>();
 
-const goSave = inject(GO_SAVE_INJECTION);
-let archiveMutationDepth = 0;
-
-/** 标记棋盘主动写入存档的同步调用，避免重复处理自身产生的事件。 */
-function runArchiveMutation<T, P extends unknown[]>(mutation?: (...params: P) => T) {
-  return (...params: P) => {
-    archiveMutationDepth += 1;
-    try {
-      return mutation?.(...params);
-    }
-    finally {
-      archiveMutationDepth -= 1;
-    }
-  };
-}
-
-const saveToArchive = runArchiveMutation(goSave?.save);
-const resetArchive = runArchiveMutation(goSave?.reset);
+const {
+  isValid: hasGoSave,
+  version: archiveVersion,
+  snapshotLen: archiveSnapshotLen,
+  saveSnapshot: saveToArchive,
+  resetSnapshot: resetArchive,
+  onSnapshotListen,
+} = useGoSave();
 
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
@@ -97,21 +88,19 @@ function clearHover() {
 /** 暴露给父组件的对局控制方法。 */
 defineExpose<GoBoardExposed>({ play, reset });
 
-if (goSave) {
-  const goSaveContext = goSave;
-
+if (hasGoSave) {
   /** 重置棋盘后延迟补全空历史，并通过版本校验取消过期保存任务。 */
   function resetHistory(snapshot?: GoGameOptions) {
     if (!goGameData.reset(snapshot)) { return; }
 
     refresh();
     emitUpdate();
-    if (goSaveContext.length !== 0) { return; }
+    if (archiveSnapshotLen.value !== 0) { return; }
 
-    const version = goSaveContext.version;
+    const version = archiveVersion.value;
     const currentSnapshot = goSnapshot.value;
     void nextTick(() => {
-      if (version !== goSaveContext.version || goSaveContext.length) {
+      if (version !== archiveVersion.value || archiveSnapshotLen.value) {
         return;
       }
 
@@ -121,8 +110,6 @@ if (goSave) {
 
   /** 根据存档事件同步棋盘；事件处理只更新棋盘，不触发新的存档操作。 */
   function onSaveChange(change: GoSaveChange) {
-    if (archiveMutationDepth > 0) { return; }
-
     switch (change.key) {
       case GO_SAVE_EVENT.REBUILD:
       case GO_SAVE_EVENT.CLEAR:
@@ -143,7 +130,7 @@ if (goSave) {
         break;
     }
   }
-  goSaveContext.onListen(onSaveChange, onBeforeUnmount);
+  onSnapshotListen(onSaveChange);
 }
 </script>
 

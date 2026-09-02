@@ -7,6 +7,8 @@ import type { GoSaveEventKey } from './keys';
 export interface GoSaveChange {
   /** 触发变化的操作类型。 */
   key: GoSaveEventKey
+  /** 变化后的历史状态版本。 */
+  version: number
   /** 变化后的当前历史位置。 */
   current: number
   /** 变化后的历史长度。 */

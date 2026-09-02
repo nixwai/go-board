@@ -218,12 +218,17 @@ describe('goSave', () => {
 
   it('notifies registered listeners with operation keys and history data', () => {
     let context!: GoSaveContext;
-    const changes: Array<{ key: string, current: number, length: number }> = [];
+    const changes: Array<{ key: string, version: number, current: number, length: number }> = [];
     let unregister!: () => void;
     const Child = createChild((value) => {
       context = value;
       value.onListen((change) => {
-        changes.push({ key: change.key, current: change.current, length: change.length });
+        changes.push({
+          key: change.key,
+          version: change.version,
+          current: change.current,
+          length: change.length,
+        });
       }, (remove) => { unregister = remove; });
     });
     mount(GoSave, { slots: { default: () => h(Child) } });
@@ -246,12 +251,12 @@ describe('goSave', () => {
       GO_SAVE_EVENT.CLEAR,
     ]);
     expect(changes).toEqual([
-      { key: 'rebuild', current: -1, length: 0 },
-      { key: 'save', current: 0, length: 1 },
-      { key: 'load', current: 0, length: 1 },
-      { key: 'save', current: 1, length: 2 },
-      { key: 'backward', current: 0, length: 2 },
-      { key: 'clear', current: -1, length: 0 },
+      { key: 'rebuild', version: 0, current: -1, length: 0 },
+      { key: 'save', version: 1, current: 0, length: 1 },
+      { key: 'load', version: 2, current: 0, length: 1 },
+      { key: 'save', version: 3, current: 1, length: 2 },
+      { key: 'backward', version: 4, current: 0, length: 2 },
+      { key: 'clear', version: 5, current: -1, length: 0 },
     ]);
 
     unregister();

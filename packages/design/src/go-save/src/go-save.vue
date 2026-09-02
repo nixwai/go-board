@@ -32,6 +32,7 @@ const listeners: GoSaveChangeListener[] = [];
 function createChange(key: GoSaveChange['key']): GoSaveChange {
   return {
     key,
+    version: version.value,
     current: goHistoryData.current,
     length: goHistoryData.length,
     snapshot: goHistoryData.snapshot,
