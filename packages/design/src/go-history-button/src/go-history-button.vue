@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { GoHistoryButtonProps } from './go-history-button';
 
-import { computed, inject, onBeforeUnmount, ref, useAttrs } from 'vue';
-import { GO_SAVE_INJECTION } from '../../go-save/src/keys';
+import { computed, useAttrs } from 'vue';
+import { useGoSave } from '../../composables/use-go-save';
 
 defineOptions({
   name: 'GoHistoryButton',
@@ -21,10 +21,13 @@ defineSlots<{
 
 const attrs = useAttrs();
 
-const goSave = inject(GO_SAVE_INJECTION);
-
-const current = ref(-1);
-const length = ref(0);
+const {
+  current,
+  snapshotLen,
+  clearSnapshots,
+  forwardSnapshot,
+  backwardSnapshot,
+} = useGoSave();
 
 const normalizedStep = computed(() => Number.isInteger(props.step) ? props.step : undefined);
 
@@ -37,21 +40,15 @@ const defaultLabel = computed(() => {
 });
 
 const isDisabled = computed(() => {
-  if (props.disabled || !goSave || normalizedStep.value === undefined || length.value === 0) {
+  if (props.disabled || normalizedStep.value === undefined || !snapshotLen.value) {
     return true;
   }
 
   if (normalizedStep.value === 0) { return false; }
 
   const target = current.value + normalizedStep.value;
-  return target < 0 || target >= length.value;
+  return target < 0 || target >= snapshotLen.value;
 });
-
-/** 根据存档事件同步当前历史位置和历史长度。 */
-goSave?.onListen((change) => {
-  current.value = change.current;
-  length.value = change.length;
-}, onBeforeUnmount);
 
 /** 按有符号步数控制历史记录前进或后退。 */
 function changeHistory() {
@@ -59,16 +56,16 @@ function changeHistory() {
   if (isDisabled.value || step === undefined) { return; }
   // 清空历史
   if (step === 0) {
-    goSave?.clear();
+    clearSnapshots();
     return;
   }
   // 前进
   if (step > 0) {
-    goSave?.forward(step);
+    forwardSnapshot(step);
     return;
   }
   // 后退
-  goSave?.backward(Math.abs(step));
+  backwardSnapshot(Math.abs(step));
 }
 </script>
 
