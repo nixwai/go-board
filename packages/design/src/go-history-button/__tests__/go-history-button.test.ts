@@ -1,10 +1,11 @@
 import type { GoGameOptions } from '@go-board/tool';
 
-import type { GoSaveExposed } from '../../go-save/src/go-save';
+import type { GoSaveContext } from '../../go-save/src/go-save';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
 import GoSave from '../../go-save/src/go-save.vue';
+import { GO_SAVE_INJECTION } from '../../go-save/src/keys';
 import DesignInstaller, { GoHistoryButton as PublicGoHistoryButton } from '../../index';
 import { GoHistoryButton as InstallableGoHistoryButton } from '../index';
 import GoHistoryButton from '../src/go-history-button.vue';
@@ -27,7 +28,7 @@ function mountSavedButton(step = -1, value = [snapshot(1), snapshot(-1), snapsho
 
   return {
     button: wrapper.findComponent(GoHistoryButton),
-    saveApi: wrapper.vm as unknown as GoSaveExposed,
+    saveApi: wrapper.vm as unknown as GoSaveContext,
     wrapper,
   };
 }
@@ -141,6 +142,18 @@ describe('goHistoryButton', () => {
     expect(mount(GoHistoryButton, { props: { disabled: true } }).attributes('disabled')).toBeDefined();
   });
 
+  it('unregisters the shared history listener when unmounted', () => {
+    const unregister = vi.fn();
+    const onListen: GoSaveContext['onListen'] = (_listener, beforeUnmount) => {
+      beforeUnmount(unregister);
+      return unregister;
+    };
+    const wrapper = mount(GoHistoryButton, { global: { provide: { [GO_SAVE_INJECTION as symbol]: { onListen } } } });
+
+    wrapper.unmount();
+
+    expect(unregister).toHaveBeenCalledOnce();
+  });
   it('forwards native click events and exposes the installable public entry', async () => {
     const onClick = vi.fn();
     const wrapper = mount(GoSave, {
@@ -155,7 +168,10 @@ describe('goHistoryButton', () => {
     expect(PublicGoHistoryButton).toBe(InstallableGoHistoryButton);
 
     const use = vi.fn();
-    DesignInstaller.install({ use } as never);
+    const app = { use } as never;
+    DesignInstaller.install(app);
+    DesignInstaller.install(app);
+    expect(use).toHaveBeenCalledTimes(4);
     expect(use).toHaveBeenCalledWith(InstallableGoHistoryButton);
   });
 });

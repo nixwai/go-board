@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { GoHistoryButtonProps } from './go-history-button';
 
-import { computed, inject, onBeforeUnmount, ref, useAttrs } from 'vue';
-import { GO_SAVE_INJECTION } from '../../go-save/src/keys';
+import { computed, useAttrs } from 'vue';
+import { useGoSave } from '../../composables/use-go-save';
 
 defineOptions({
   name: 'GoHistoryButton',
@@ -21,10 +21,7 @@ defineSlots<{
 
 const attrs = useAttrs();
 
-const goSave = inject(GO_SAVE_INJECTION);
-
-const current = ref(-1);
-const length = ref(0);
+const { current, goSave, length } = useGoSave();
 
 const normalizedStep = computed(() => Number.isInteger(props.step) ? props.step : undefined);
 
@@ -46,12 +43,6 @@ const isDisabled = computed(() => {
   const target = current.value + normalizedStep.value;
   return target < 0 || target >= length.value;
 });
-
-/** 根据存档事件同步当前历史位置和历史长度。 */
-goSave?.onListen((change) => {
-  current.value = change.current;
-  length.value = change.length;
-}, onBeforeUnmount);
 
 /** 按有符号步数控制历史记录前进或后退。 */
 function changeHistory() {
