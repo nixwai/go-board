@@ -13,6 +13,12 @@ function snapshot(player: 1 | -1): GoGameOptions {
   return { size: 3, player };
 }
 
+function lastEmittedArgument(wrapper: ReturnType<typeof mount>, event: string): unknown {
+  const emittedEvents = wrapper.emitted(event) ?? [];
+
+  return emittedEvents[emittedEvents.length - 1]?.[0];
+}
+
 function mountSavedButton(step = -1, value = [snapshot(1), snapshot(-1), snapshot(1)]) {
   const wrapper = mount(GoSave, {
     props: { value },
@@ -99,7 +105,7 @@ describe('goHistoryButton', () => {
     await nextTick();
 
     expect(changes).toEqual([{ key: 'clear', length: 0 }]);
-    expect(wrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([]);
+    expect(lastEmittedArgument(wrapper, 'update:value')).toEqual([]);
     expect(button.attributes('disabled')).toBeDefined();
   });
 

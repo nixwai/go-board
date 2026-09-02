@@ -12,6 +12,12 @@ function snapshot(player: 1 | -1): GoGameOptions {
   return { size: 3, player };
 }
 
+function lastEmittedArgument(wrapper: ReturnType<typeof mount>, event: string): unknown {
+  const emittedEvents = wrapper.emitted(event) ?? [];
+
+  return emittedEvents[emittedEvents.length - 1]?.[0];
+}
+
 function mountSavedSlider(value?: GoGameOptions[]) {
   const wrapper = mount(GoSave, {
     props: { value },
@@ -64,7 +70,7 @@ describe('goHistorySlider', () => {
     await input.setValue('0');
 
     expect((input.element as HTMLInputElement).value).toBe('0');
-    expect(wrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([first, second]);
+    expect(lastEmittedArgument(wrapper, 'update:value')).toEqual([first, second]);
   });
 
   it('dynamically follows snapshot saves, clears and controlled rebuilds', async () => {

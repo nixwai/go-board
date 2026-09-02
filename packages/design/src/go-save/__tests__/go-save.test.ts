@@ -11,6 +11,12 @@ function snapshot(player: 1 | -1): GoGameOptions {
   return { size: 3, player, layout: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] };
 }
 
+function lastEmittedArgument(wrapper: ReturnType<typeof mount>, event: string): unknown {
+  const emittedEvents = wrapper.emitted(event) ?? [];
+
+  return emittedEvents[emittedEvents.length - 1]?.[0];
+}
+
 function createChild(onContext: (context: GoSaveContext) => void) {
   return defineComponent({
     setup() {
@@ -52,7 +58,7 @@ describe('goSave', () => {
     expect(context.snapshot).toBe(third);
     expect(context.length).toBe(2);
     expect(context.snapshots).toEqual([first, third]);
-    expect(wrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([first, third]);
+    expect(lastEmittedArgument(wrapper, 'update:value')).toEqual([first, third]);
     await nextTick();
     expect(wrapper.find('[data-current]').attributes('data-current')).toBe('1');
     expect(wrapper.find('[data-current]').attributes('data-length')).toBe('2');

@@ -16,6 +16,12 @@ function exposed(wrapper: ReturnType<typeof mount>): GoBoardExposed {
   return wrapper.vm as unknown as GoBoardExposed;
 }
 
+function lastEmittedArgument(wrapper: ReturnType<typeof mount>, event: string): unknown {
+  const emittedEvents = wrapper.emitted(event) ?? [];
+
+  return emittedEvents[emittedEvents.length - 1]?.[0];
+}
+
 function mountSavedBoard(init: GoGameOptions, value?: GoGameOptions[]) {
   const saveWrapper = mount(GoSave, {
     props: { value },
@@ -352,7 +358,7 @@ describe('goBoard', () => {
 
     await nextTick();
     expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone-black').exists()).toBe(true);
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({
         size: 3,
         layout: initLayout,
@@ -371,7 +377,7 @@ describe('goBoard', () => {
 
     expect(boardWrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     await nextTick();
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({
         size: 3,
         layout: emptyLayout(3),
@@ -407,7 +413,7 @@ describe('goBoard', () => {
     expect(boardWrapper.find('[aria-label="A1"] .chess-piece-stone').exists()).toBe(false);
     expect(boardWrapper.findAll('.chess-piece-stone')).toHaveLength(0);
     expect(boardWrapper.emitted('update')).toHaveLength(3);
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({
         size: 3,
         layout: emptyLayout(3),
@@ -427,7 +433,7 @@ describe('goBoard', () => {
     expect(api.reset({ size: 3, layout: resetLayout, player: 1, latestVertex: [2, 2] })).toBe(true);
     expect(saveWrapper.emitted('update:value')).toHaveLength(3);
 
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({
         size: 3,
         layout: resetLayout,
@@ -524,7 +530,7 @@ describe('goBoard', () => {
 
     expect(boardWrapper.find('[aria-label="C1"] .chess-piece-stone-white').exists()).toBe(true);
     expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone').exists()).toBe(false);
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({ layout: cachedLayout, player: 1 }),
     ]);
   });
@@ -545,7 +551,7 @@ describe('goBoard', () => {
 
     expect(boardWrapper.find('[aria-label="B2"] .chess-piece-stone-white').exists()).toBe(true);
     expect(boardWrapper.find('[aria-label="A3"] .chess-piece-stone').exists()).toBe(false);
-    expect(saveWrapper.emitted('update:value')?.at(-1)?.[0]).toEqual([
+    expect(lastEmittedArgument(saveWrapper, 'update:value')).toEqual([
       expect.objectContaining({ layout: archivedLayout, player: 1 }),
     ]);
   });
