@@ -276,7 +276,91 @@ boardRef.value?.reset({ size: 13, player: 1 });
 | `forward` | `step?: number` | `GoGameOptions \| undefined` | 向前移动指定步数，默认 1 步。 |
 | `backward` | `step?: number` | `GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步。 |
 | `clear` | 无 | `void` | 清除全部历史记录。 |
-| `onListen` | `listener: GoSaveChangeListener`<br>`onBeforeMount: Function` | `() => void` | 注册历史变化监听，并在组件卸载前自动注销。 |
+| `onListen` | `listener: GoSaveChangeListener`<br>`onBeforeUnmount: Function` | `() => void` | 注册历史变化监听，并在组件卸载前自动注销。 |
+
+### useGoSave
+
+`useGoSave` 用于在组合式 API 中访问 `GoSave` 的响应式历史状态和操作方法。通常应在 `GoSave` 默认插槽内的子组件中调用，由组合式 API 自动注入最近的存档上下文并在组件卸载前注销监听；也可以传入已有的 `GoSaveInstance`。
+
+```vue
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useGoSave } from '@go-board/design';
+
+const {
+  isValid,
+  version,
+  current,
+  snapshot,
+  snapshotLen,
+  backwardSnapshot,
+  forwardSnapshot,
+  clearSnapshots,
+  onSnapshotListen,
+} = useGoSave();
+
+const canBackward = computed(() => isValid && current.value > 0);
+const canForward = computed(() => (
+  isValid && current.value < snapshotLen.value - 1
+));
+
+onSnapshotListen((change) => {
+  console.log('历史版本：', change.version);
+  console.log('当前快照：', change.snapshot);
+});
+</script>
+
+<template>
+  <div>
+    <span>{{ current + 1 }} / {{ snapshotLen }}</span>
+    <button type="button" :disabled="!canBackward" @click="backwardSnapshot()">
+      后退
+    </button>
+    <button type="button" :disabled="!canForward" @click="forwardSnapshot()">
+      前进
+    </button>
+    <button type="button" :disabled="!snapshotLen" @click="clearSnapshots()">
+      清空
+    </button>
+    <pre v-if="snapshot">{{ snapshot }}</pre>
+    <small>历史版本：{{ version }}</small>
+  </div>
+</template>
+```
+
+```vue
+<script setup lang="ts">
+import HistoryControls from './HistoryControls.vue';
+import { GoBoard, GoSave } from '@go-board/design';
+</script>
+
+<template>
+  <GoSave>
+    <GoBoard :init="{ size: 9 }" />
+    <HistoryControls />
+  </GoSave>
+</template>
+```
+
+#### 返回值
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `isValid` | `boolean` | 是否获取到可用的 `GoSave` 上下文。 |
+| `version` | `Ref<number>` | 历史状态版本；每次有效的历史数据、位置变化或受控重建后递增。 |
+| `current` | `Ref<number>` | 当前历史位置；无历史记录时为 `-1`。 |
+| `snapshot` | `Ref<GoGameOptions \| undefined>` | 当前历史位置对应的快照。 |
+| `snapshotLen` | `Ref<number>` | 当前历史快照数量。 |
+| `snapshotList` | `Ref<GoGameOptions[]>` | 当前全部历史快照。 |
+| `saveSnapshot` | `(snapshot, position?) => boolean \| undefined` | 保存快照，并丢弃插入位置之后的历史。 |
+| `resetSnapshot` | `(snapshot) => boolean \| undefined` | 清空历史并保存唯一快照。 |
+| `loadSnapshot` | `(position) => GoGameOptions \| undefined` | 跳转到指定历史位置。 |
+| `forwardSnapshot` | `(step?) => GoGameOptions \| undefined` | 向前移动指定步数，默认 1 步。 |
+| `backwardSnapshot` | `(step?) => GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步。 |
+| `clearSnapshots` | `() => void` | 清除全部历史记录。 |
+| `onSnapshotListen` | `(listener: GoSaveChangeListener) => void` | 监听外部历史变化，并自动过滤由当前 `useGoSave` 实例的操作方法主动触发的同一次变更。 |
+
+未获取到 `GoSave` 上下文时，`isValid` 为 `false`，响应式状态使用空历史默认值，操作方法不会修改任何数据。
 
 ### GoHistoryButton
 
