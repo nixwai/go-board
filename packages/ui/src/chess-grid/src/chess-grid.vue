@@ -30,6 +30,11 @@ function getPosition(x: number, y: number): ChessGridPosition {
   return [x, y];
 }
 
+/** 读取当前网格单元的势力值，缺失位置按无势力处理。 */
+function getInfluence(x: number, y: number): 0 | 1 | -1 {
+  return props.influences?.[y]?.[x] ?? 0;
+}
+
 /** 将二维数组索引转换为便于读屏识别的文本坐标。 */
 function getAriaLabel(x: number, y: number): string {
   return `${COLUMN_LABELS[x]}${size.value - y}`;
@@ -63,7 +68,7 @@ function handleClick(x: number, y: number) {
         @mouseenter="handleMouseenter(x, y)"
         @click="handleClick(x, y)"
       >
-        <slot :sign="sign" :position="getPosition(x, y)" />
+        <slot :sign="sign" :influence="getInfluence(x, y)" :position="getPosition(x, y)" />
       </button>
     </template>
   </div>
