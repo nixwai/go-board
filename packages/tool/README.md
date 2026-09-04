@@ -192,6 +192,15 @@ history.insert({ size: 9, player: 1 });
 | `forward` | `step?: number` | `GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步；步数必须为正整数。 |
 | `jump` | `position: number` | `GoGameOptions \| undefined` | 跳转到指定历史位置；越界或非整数时保持当前位置不变。 |
 | `insert` | `snapshot: GoGameOptions`<br>`position?: number` | `boolean` | 在指定位置插入快照，并丢弃该位置之后的全部历史；默认插入当前位置之后。 |
+## 形势布局
+
+`getInfluenceLayout()` 基于 `@sabaki/influence` 计算当前布局中黑方和白方的离散势力归属，返回与输入布局相同尺寸的 `GoLayout`。返回值中 `1` 表示黑方势力，`-1` 表示白方势力，`0` 表示中立区域。函数不会修改传入布局。
+
+```ts
+import { getInfluenceLayout } from '@go-board/tool';
+
+const influence = getInfluenceLayout(layout);
+```
 ## 创建函数
 
 | 函数 | 参数 | 返回值 | 说明 |

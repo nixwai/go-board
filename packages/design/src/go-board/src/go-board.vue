@@ -3,9 +3,9 @@ import type { GoGameOptions, GoGamePosition, GoGameSnapshot, GoVertex } from '@g
 import type { GoSaveChange } from '../../go-save/src/go-save';
 import type { GoBoardExposed, GoBoardProps } from './go-board';
 
-import { GoGameData, vertexEquals } from '@go-board/tool';
-import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
-import { inject, nextTick, onBeforeUnmount, ref } from 'vue';
+import { getInfluenceLayout, GoGameData, vertexEquals } from '@go-board/tool';
+import { Chessboard, ChessGrid, ChessInfluence, ChessPiece } from '@go-board/ui';
+import { computed, inject, nextTick, onBeforeUnmount, ref } from 'vue';
 import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../../go-save/src/keys';
 
 defineOptions({ name: 'GoBoard' });
@@ -13,6 +13,7 @@ defineOptions({ name: 'GoBoard' });
 const props = withDefaults(defineProps<GoBoardProps>(), {
   disabled: false,
   showCoord: false,
+  showInfluence: false,
   width: '100%',
 });
 
@@ -43,6 +44,10 @@ const resetArchive = runArchiveMutation(goSave?.reset);
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
 const goSnapshot = ref<GoGameSnapshot>(goGameData.snapshot);
+/** 根据当前棋盘布局按需计算黑白双方的离散势力归属。 */
+const influenceLayout = computed(() => props.showInfluence
+  ? getInfluenceLayout(goSnapshot.value.layout)
+  : undefined);
 const hoverPosition = ref<GoVertex>();
 
 /** 通知外部当前完整对局快照。 */
@@ -159,11 +164,16 @@ if (goSave) {
   >
     <ChessGrid
       :rows="goSnapshot.layout"
+      :influences="influenceLayout"
       :disabled="props.disabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
     >
-      <template #default="{ sign, position }">
+      <template #default="{ sign, influence, position }">
+        <ChessInfluence
+          v-if="influence && influence !== sign"
+          :sign="influence"
+        />
         <ChessPiece
           v-if="sign"
           :sign="sign"

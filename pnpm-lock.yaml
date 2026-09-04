@@ -105,7 +105,11 @@ importers:
         specifier: ^3.5.42
         version: 3.5.42(typescript@6.0.3)
 
-  packages/tool: {}
+  packages/tool:
+    dependencies:
+      '@sabaki/influence':
+        specifier: 1.2.2
+        version: 1.2.2
 
   packages/ui:
     devDependencies:
@@ -198,6 +202,9 @@ importers:
         version: 3.5.42(typescript@6.0.3)
 
 packages:
+  '@sabaki/influence@1.2.2':
+    resolution: {integrity: sha512-VaySQcgFFgPsGmzZJ2AE97g0b6+9bBxEZlCmS++cyJ9GboLwoXjGZa4vGKdY3zXvzngzSEwQWu3PrONfZOFthw==}
+
 
   '@antfu/eslint-config@9.3.0':
     resolution: {integrity: sha512-+CIC4G6MowUl1RHiT01Ah9Obo/wwVynw7uNlN8ODwEn2opo9W1KzaatCrmu4WhGGJjOkOkyT5w7kKfQ//agHrQ==}
@@ -5043,6 +5050,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.62.4':
     optional: true
+
+  '@sabaki/influence@1.2.2': {}
 
   '@sindresorhus/base62@1.0.0': {}
 

@@ -57,6 +57,20 @@ describe('goBoard', () => {
     expect(coordinateWrapper.findAll('.chessboard-coordinates text')).toHaveLength(18);
   });
 
+  it('controls influence visibility through showInfluence', async () => {
+    const layout: GoLayout = [
+      [1, 1, 1],
+      [1, 0, 1],
+      [1, 1, 1],
+    ];
+    const wrapper = mount(GoBoard, { props: { showInfluence: true, init: { size: 3, layout } } });
+
+    expect(wrapper.vm.$options.props).toHaveProperty('showInfluence');
+    expect(wrapper.findAll('.chess-influence-cube-black')).toHaveLength(1);
+
+    await wrapper.setProps({ showInfluence: false });
+    expect(wrapper.find('.chess-influence-cube').exists()).toBe(false);
+  });
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 

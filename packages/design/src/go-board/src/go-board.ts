@@ -8,6 +8,8 @@ export interface GoBoardProps {
   width?: number | string
   /** 是否在棋盘左侧显示行坐标、下侧显示列坐标。 */
   showCoord?: boolean
+  /** 是否显示黑白双方的势力归属。 */
+  showInfluence?: boolean
   /** 棋盘初始化配置。 */
   init?: GoGameOptions
 }
