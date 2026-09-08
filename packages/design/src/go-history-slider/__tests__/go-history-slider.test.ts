@@ -1,6 +1,6 @@
 import type { GoGameOptions } from '@go-board/tool';
 
-import type { GoSaveExposed } from '../../go-save/src/go-save';
+import type { GoSaveContext } from '../../go-save/src/go-save';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
@@ -25,7 +25,7 @@ function mountSavedSlider(value?: GoGameOptions[]) {
   });
 
   return {
-    saveApi: wrapper.vm as unknown as GoSaveExposed,
+    saveApi: wrapper.vm as unknown as GoSaveContext,
     slider: wrapper.findComponent(GoHistorySlider),
     wrapper,
   };

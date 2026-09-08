@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { GoGameOptions } from '@go-board/tool';
-import type { GoSaveChange, GoSaveChangeListener, GoSaveContext, GoSaveExposed, GoSaveOnBeforeMount, GoSaveProps } from './go-save';
-
+import type { onBeforeUnmount } from 'vue';
+import type { GoSaveChange, GoSaveChangeListener, GoSaveContext, GoSaveProps } from './go-save';
 import { GoHistoryData } from '@go-board/tool';
 import { provide, shallowRef, toRaw, watch } from 'vue';
 import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from './keys';
 
-defineOptions({ name: 'GoSave' });
+defineOptions({
+  name: 'GoSave',
+  inheritAttrs: false,
+});
 
 const props = defineProps<GoSaveProps>();
 const emit = defineEmits<{
@@ -29,6 +32,7 @@ const listeners: GoSaveChangeListener[] = [];
 function createChange(key: GoSaveChange['key']): GoSaveChange {
   return {
     key,
+    version: version.value,
     current: goHistoryData.current,
     length: goHistoryData.length,
     snapshot: goHistoryData.snapshot,
@@ -84,7 +88,7 @@ function syncChange(key: GoSaveChange['key']) {
 /** 注册历史变化监听，并立即补发初始化或最近一次重建事件。 */
 function onListen(
   listener: GoSaveChangeListener,
-  onBeforeMount: GoSaveOnBeforeMount,
+  beforeUnmount: typeof onBeforeUnmount,
 ): () => void {
   const registeredListener: GoSaveChangeListener = change => listener(change);
   listeners.push(registeredListener);
@@ -97,7 +101,7 @@ function onListen(
       listeners.splice(index, 1);
     }
   };
-  onBeforeMount(unregister);
+  beforeUnmount(unregister);
   registeredListener(createChange(GO_SAVE_EVENT.REBUILD));
   return unregister;
 }
@@ -184,7 +188,7 @@ const context: GoSaveContext = {
 
 provide(GO_SAVE_INJECTION, context);
 
-defineExpose<GoSaveExposed>({ save, reset, load, forward, backward, clear, onListen });
+defineExpose<GoSaveContext>(context);
 </script>
 
 <template>
