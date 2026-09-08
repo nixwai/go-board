@@ -1,3 +1,5 @@
+export * from './composables';
+
 /** 导出围棋棋盘组件及其类型。 */
 export * from './go-board';
 /** 导出历史记录控制按钮组件及其类型。 */
