@@ -3,10 +3,18 @@ import type { GoGameOptions, GoLayout } from '@go-board/tool';
 import type { GoSaveExposed } from '../../go-save/src/go-save';
 import type { GoBoardExposed } from '../src/go-board';
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
 import GoSave from '../../go-save/src/go-save.vue';
 import GoBoard from '../src/go-board.vue';
+
+const { getInfluenceLayoutMock } = vi.hoisted(() => ({ getInfluenceLayoutMock: vi.fn() }));
+
+vi.mock('@go-board/tool', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@go-board/tool')>();
+
+  return { ...actual, getInfluenceLayout: getInfluenceLayoutMock };
+});
 
 function emptyLayout(size: number): GoLayout {
   return Array.from({ length: size }, () => Array.from({ length: size }).fill(0)) as GoLayout;
@@ -36,6 +44,11 @@ function mountSavedBoard(init: GoGameOptions, value?: GoGameOptions[]) {
 }
 
 describe('goBoard', () => {
+  beforeEach(() => {
+    getInfluenceLayoutMock.mockReset();
+    getInfluenceLayoutMock.mockResolvedValue([]);
+  });
+
   it('forwards root aria and DOM attributes through chessboard', () => {
     const wrapper = mount(GoBoard, {
       attrs: {
@@ -63,14 +76,50 @@ describe('goBoard', () => {
       [1, 0, 1],
       [1, 1, 1],
     ];
+    getInfluenceLayoutMock.mockResolvedValue([
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+    ]);
     const wrapper = mount(GoBoard, { props: { showInfluence: true, init: { size: 3, layout } } });
 
     expect(wrapper.vm.$options.props).toHaveProperty('showInfluence');
-    expect(wrapper.findAll('.chess-influence-cube-black')).toHaveLength(1);
+    await vi.waitFor(() => {
+      expect(wrapper.findAll('.chess-influence-cube-black')).toHaveLength(1);
+    });
 
     await wrapper.setProps({ showInfluence: false });
     expect(wrapper.find('.chess-influence-cube').exists()).toBe(false);
   });
+
+  it('skips influence calculation when stones are below the default ratio', () => {
+    const layout = emptyLayout(19);
+    layout[0][0] = 1;
+
+    mount(GoBoard, { props: { showInfluence: true, init: { size: 19, layout } } });
+
+    expect(getInfluenceLayoutMock).not.toHaveBeenCalled();
+  });
+
+  it('uses influenceMinStoneRatio to control the calculation threshold', async () => {
+    const layout = emptyLayout(3);
+    layout[0][0] = 1;
+    const wrapper = mount(GoBoard, {
+      props: {
+        showInfluence: true,
+        influenceMinStoneRatio: 0.2,
+        init: { size: 3, layout },
+      },
+    });
+
+    expect(getInfluenceLayoutMock).not.toHaveBeenCalled();
+
+    expect(exposed(wrapper).play([0, 1])).toBe(true);
+    await nextTick();
+
+    expect(getInfluenceLayoutMock).toHaveBeenCalledTimes(1);
+  });
+
   it('renders a default 19 by 19 board', () => {
     const wrapper = mount(GoBoard);
 

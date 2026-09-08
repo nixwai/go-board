@@ -172,6 +172,7 @@ const history = ref<GoGameOptions[]>([]);
 | `width` | `number \| string` | `'100%'` | 棋盘容器宽度。正数按像素处理，字符串作为 CSS 宽度值使用；无效数字或空字符串使用 `100%`。 |
 | `showCoord` | `boolean` | `false` | 是否在棋盘左侧显示从上到下递减的行坐标、下侧显示跳过字母 I 的列坐标。 |
 | `showInfluence` | `boolean` | `false` | 是否显示黑白双方的离散势力归属。 |
+| `influenceMinStoneRatio` | `number` | `0.1` | 计算形势所需的最小棋子占棋盘交叉点比例，取值范围为 `0`～`1`。 |
 | `init` | `GoGameOptions` | — | 棋局初始化配置，支持 `size`、`layout`、`player`、`ko` 和 `latestVertex`。 |
 
 `GoBoard` 没有独立的 `size` Prop，棋盘路数通过 `init.size` 设置，后续可以通过 `reset({ size })` 修改。

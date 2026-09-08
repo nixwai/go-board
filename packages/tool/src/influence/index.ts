@@ -1,27 +1,69 @@
-import type { GoLayout } from '../types';
-import influence from '@sabaki/influence';
+import type { GoLayout, GoSign } from '../types';
+import { getProbabilityMap, useFetch } from '@sabaki/deadstones';
+import { cloneLayout } from '../create';
 
-/** @sabaki/influence 的默认辐射半径要求最短边至少为 6。 */
-const MIN_INFLUENCE_BOARD_SIZE = 6;
+/** 绝对概率低于或等于该值时，视为中立区域。 */
+const INFLUENCE_THRESHOLD = 0.15;
+/** 默认随机终局模拟次数。 */
+const DEFAULT_INFLUENCE_ITERATIONS = 200;
+/** 防止无界配置导致前端长时间阻塞。 */
+const MAX_INFLUENCE_ITERATIONS = 2000;
 
-/** 将第三方结果收敛为工具包统一的棋子标记。 */
-function normalizeInfluenceLayout(layout: number[][]): GoLayout {
-  return layout.map(row => row.map(sign => sign === 1 ? 1 : sign === -1 ? -1 : 0));
+let browserWasmSetup: Promise<void> | undefined;
+
+/** 形势分析配置。 */
+export interface GoInfluenceOptions {
+  /** 随机终局模拟次数。 */
+  iterations?: number
 }
 
-/** 根据当前棋盘布局计算黑白双方的离散势力归属。 */
-export function getInfluenceLayout(layout: GoLayout): GoLayout {
-  const source = layout.map(row => [...row]);
-  const width = source[0]?.length ?? 0;
+/** 将概率值转换为黑方、白方或中立势力。 */
+function normalizeInfluence(value: number): GoSign {
+  if (!Number.isFinite(value) || Math.abs(value) <= INFLUENCE_THRESHOLD) {
+    return 0;
+  }
 
-  if (source.length === 0 || width === 0) {
+  return value > 0 ? 1 : -1;
+}
+
+/** 将模拟次数限制为可控的正整数。 */
+function normalizeIterations(iterations?: number): number {
+  if (typeof iterations !== 'number' || !Number.isFinite(iterations)) {
+    return DEFAULT_INFLUENCE_ITERATIONS;
+  }
+
+  return Math.min(Math.max(Math.trunc(iterations), 1), MAX_INFLUENCE_ITERATIONS);
+}
+
+/** 浏览器首次分析前配置依赖包的 WASM 资源地址。 */
+async function setupBrowserWasm(): Promise<void> {
+  if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+    return;
+  }
+
+  browserWasmSetup ??= import('@sabaki/deadstones/wasm/deadstones_bg.wasm?url')
+    .then(({ default: wasmUrl }) => {
+      useFetch(wasmUrl);
+    });
+
+  await browserWasmSetup;
+}
+
+/** 使用 getProbabilityMap 计算黑白双方的离散势力归属。 */
+export async function getInfluenceLayout(
+  layout: GoLayout,
+  options: GoInfluenceOptions = {},
+): Promise<GoLayout> {
+  const source = cloneLayout(layout);
+  if (source.length === 0 || (source[0]?.length ?? 0) === 0) {
+    return source;
+  }
+  if (source.every(row => row.every(sign => sign === 0))) {
     return source;
   }
 
-  // 上游默认辐射半径在小棋盘上会越界，使用区域判断保证 1～5 路棋盘也能稳定返回结果。
-  const result = Math.min(source.length, width) < MIN_INFLUENCE_BOARD_SIZE
-    ? influence.areaMap(source)
-    : influence.map(source, { discrete: true });
+  await setupBrowserWasm();
+  const probability = await getProbabilityMap(source, normalizeIterations(options.iterations));
 
-  return normalizeInfluenceLayout(result);
+  return source.map((row, y) => row.map((_, x) => normalizeInfluence(probability[y]?.[x] ?? 0)));
 }

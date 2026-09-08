@@ -10,6 +10,8 @@ export interface GoBoardProps {
   showCoord?: boolean
   /** 是否显示黑白双方的势力归属。 */
   showInfluence?: boolean
+  /** 计算形势所需的最小棋子占棋盘交叉点比例。 */
+  influenceMinStoneRatio?: number
   /** 棋盘初始化配置。 */
   init?: GoGameOptions
 }
