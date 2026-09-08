@@ -3,10 +3,11 @@ import type { GoGameOptions, GoGamePosition, GoGameSnapshot, GoVertex } from '@g
 import type { GoSaveChange } from '../../go-save/src/go-save';
 import type { GoBoardExposed, GoBoardProps } from './go-board';
 
-import { getInfluenceLayout, GoGameData, vertexEquals } from '@go-board/tool';
+import { GoGameData, vertexEquals } from '@go-board/tool';
 import { Chessboard, ChessGrid, ChessInfluence, ChessPiece } from '@go-board/ui';
-import { inject, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { inject, nextTick, onBeforeUnmount, ref } from 'vue';
 import { GO_SAVE_EVENT, GO_SAVE_INJECTION } from '../../go-save/src/keys';
+import { useInfluence } from './composables/use-influence';
 
 defineOptions({ name: 'GoBoard' });
 
@@ -22,8 +23,6 @@ const emit = defineEmits<{
   update: [payload: GoGameSnapshot]
   move: [payload: GoGameSnapshot]
 }>();
-
-const DEFAULT_INFLUENCE_MIN_STONE_RATIO = 0.1;
 
 const goSave = inject(GO_SAVE_INJECTION);
 let archiveMutationDepth = 0;
@@ -47,66 +46,12 @@ const resetArchive = runArchiveMutation(goSave?.reset);
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
 const goSnapshot = ref<GoGameSnapshot>(goGameData.snapshot);
-/** 当前展示的黑白双方离散势力归属。 */
-const influenceLayout = ref<GoGameSnapshot['layout']>();
-
-/** 只有棋子数量达到配置比例时才启动形势分析，避免开局阶段无效计算。 */
-function shouldCalculateInfluence(
-  layout: GoGameSnapshot['layout'],
-  minStoneRatio: number,
-): boolean {
-  const totalPoints = layout.reduce((total, row) => total + row.length, 0);
-  if (totalPoints === 0) { return false; }
-
-  const stoneCount = layout.reduce(
-    (total, row) => total + row.filter(sign => sign !== 0).length,
-    0,
-  );
-
-  return stoneCount / totalPoints >= minStoneRatio;
-}
-
-/** 将形势分析比例限制在 0～1，避免无效配置破坏计算条件。 */
-function normalizeInfluenceMinStoneRatio(ratio: number): number {
-  if (!Number.isFinite(ratio)) { return DEFAULT_INFLUENCE_MIN_STONE_RATIO; }
-
-  return Math.min(Math.max(ratio, 0), 1);
-}
-
-/** 显示形势时异步获取概率归属结果，并忽略过期分析结果。 */
-watch(
-  [
-    () => props.showInfluence,
-    () => props.influenceMinStoneRatio,
-    () => goSnapshot.value.layout,
-  ],
-  ([showInfluence, minStoneRatio, layout], _, onCleanup) => {
-    let active = true;
-    onCleanup(() => {
-      active = false;
-    });
-
-    if (!showInfluence || !shouldCalculateInfluence(
-      layout,
-      normalizeInfluenceMinStoneRatio(minStoneRatio),
-    )) {
-      influenceLayout.value = undefined;
-      return;
-    }
-
-    influenceLayout.value = undefined;
-    void getInfluenceLayout(layout)
-      .then((result) => {
-        if (active) {
-          influenceLayout.value = result;
-        }
-      })
-      .catch((error: unknown) => {
-        console.error('[GoBoard] 概率形势分析失败。', error);
-      });
-  },
-  { immediate: true },
-);
+/** 由形势分析组合式函数维护当前黑白双方离散势力归属。 */
+const { influenceLayout } = useInfluence({
+  layout: () => goSnapshot.value.layout,
+  showInfluence: () => props.showInfluence,
+  influenceMinStoneRatio: () => props.influenceMinStoneRatio,
+});
 const hoverPosition = ref<GoVertex>();
 
 /** 通知外部当前完整对局快照。 */
