@@ -245,4 +245,22 @@ describe('goBoard save integration', () => {
       expect.objectContaining({ layout: archivedLayout, player: 1 }),
     ]);
   });
+  it('disables board interactions when the GoSave context is disabled', async () => {
+    const { boardWrapper, saveWrapper } = mountSavedBoard({ size: 3 });
+    await nextTick();
+
+    expect(boardWrapper.findAll('.chess-grid-cell').every(cell => cell.attributes('disabled') === undefined)).toBe(true);
+
+    await saveWrapper.setProps({ disabled: true });
+    await nextTick();
+
+    expect(boardWrapper.findAll('.chess-grid-cell').every(cell => cell.attributes('disabled') !== undefined)).toBe(true);
+
+    const cell = boardWrapper.find('[aria-label="A1"]');
+    await cell.trigger('mouseenter');
+    await cell.trigger('click');
+
+    expect(boardWrapper.emitted('move')).toBeUndefined();
+    expect(boardWrapper.find('.chess-piece-stone-preview').exists()).toBe(false);
+  });
 });

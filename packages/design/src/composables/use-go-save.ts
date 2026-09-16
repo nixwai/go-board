@@ -1,5 +1,5 @@
 import type { GoSaveChange, GoSaveInstance } from '../go-save';
-import { inject, onBeforeUnmount, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, ref } from 'vue';
 import { GO_SAVE_INJECTION } from '../go-save';
 
 /** 订阅存档上下文，并维护历史控制组件共享的状态和操作。 */
@@ -10,6 +10,8 @@ export function useGoSave(goSaveInstance?: GoSaveInstance) {
   const snapshotLen = ref(goSave?.length ?? 0);
   const snapshot = ref(goSave?.snapshot);
   const snapshotList = ref(goSave?.snapshots ?? []);
+  /** 存档禁用状态由 GoSave 下发，未注入时保持可用。 */
+  const disabled = computed(() => goSave?.disabled ?? false);
 
   let archiveMutationDepth = 0;
 
@@ -44,6 +46,7 @@ export function useGoSave(goSaveInstance?: GoSaveInstance) {
 
   return {
     isValid: Boolean(goSave),
+    disabled,
     version,
     current,
     snapshot,

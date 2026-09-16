@@ -11,7 +11,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const props = defineProps<GoSaveProps>();
+const props = withDefaults(defineProps<GoSaveProps>(), { disabled: false });
 const emit = defineEmits<{
   /** 历史快照列表变化时同步受控值。 */
   'update:value': [value: GoGameOptions[]]
@@ -165,6 +165,10 @@ const context: GoSaveContext = {
   backward,
   clear,
   onListen,
+  /** 是否禁用插槽内已注入存档上下文的组件。 */
+  get disabled() {
+    return props.disabled;
+  },
   get version() {
     return version.value;
   },

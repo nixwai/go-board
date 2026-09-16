@@ -36,6 +36,8 @@ export interface GoSaveContext {
   backward: (step?: number) => GoGameOptions | undefined
   /** 清除全部历史记录。 */
   clear: () => void
+  /** 是否禁用插槽内已注入存档上下文的组件。 */
+  readonly disabled: boolean
   /** 历史状态版本，每次历史数据或位置变化时递增。 */
   readonly version: number
   /** 当前历史位置。 */
@@ -57,4 +59,6 @@ export interface GoSaveContext {
 export interface GoSaveProps {
   /** 初始化或受控的历史快照列表；组件不会深拷贝快照。 */
   value?: GoGameOptions[]
+  /** 是否禁用插槽内已注入存档上下文的组件。 */
+  disabled?: boolean
 }

@@ -12,6 +12,7 @@ defineOptions({
 const props = withDefaults(defineProps<GoHistorySliderProps>(), { disabled: false });
 const attrs = useAttrs();
 const {
+  disabled: contextDisabled,
   current,
   snapshotLen,
   loadSnapshot,
@@ -19,7 +20,7 @@ const {
 
 const minimum = computed(() => snapshotLen.value > 0 ? 0 : -1);
 const maximum = computed(() => snapshotLen.value - 1);
-const isDisabled = computed(() => props.disabled || !snapshotLen);
+const isDisabled = computed(() => contextDisabled.value || props.disabled || !snapshotLen.value);
 
 /** 将滑动输入值映射为 GoSave 的历史快照位置。 */
 function handleInput(event: Event) {

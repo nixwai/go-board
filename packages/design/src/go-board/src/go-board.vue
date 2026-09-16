@@ -27,6 +27,7 @@ const emit = defineEmits<{
 
 const {
   isValid: hasGoSave,
+  disabled: contextDisabled,
   version: archiveVersion,
   snapshotLen: archiveSnapshotLen,
   saveSnapshot: saveToArchive,
@@ -156,7 +157,7 @@ if (hasGoSave) {
     <ChessGrid
       :rows="goSnapshot.layout"
       :influences="influenceLayout"
-      :disabled="props.disabled"
+      :disabled="props.disabled || contextDisabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
     >

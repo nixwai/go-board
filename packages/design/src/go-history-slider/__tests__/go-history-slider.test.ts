@@ -100,6 +100,29 @@ describe('goHistorySlider', () => {
     expect((slider.element as HTMLInputElement).value).toBe('2');
   });
 
+  it('disables the slider when GoSave is disabled and follows the flag changes', async () => {
+    const { slider, wrapper } = mountSavedSlider([snapshot(1)]);
+
+    expect(slider.attributes('disabled')).toBeUndefined();
+
+    await wrapper.setProps({ disabled: true });
+    await nextTick();
+    expect(slider.attributes('disabled')).toBeDefined();
+
+    await wrapper.setProps({ disabled: false });
+    await nextTick();
+    expect(slider.attributes('disabled')).toBeUndefined();
+  });
+
+  it('combines its own disabled prop with the GoSave disabled flag', () => {
+    const wrapper = mount(GoSave, {
+      props: { value: [snapshot(1)] },
+      slots: { default: () => h(GoHistorySlider, { disabled: true }) },
+    });
+
+    expect(wrapper.findComponent(GoHistorySlider).attributes('disabled')).toBeDefined();
+  });
+
   it('forwards native input events and exposes the installable public entry', async () => {
     const onInput = vi.fn();
     const wrapper = mount(GoSave, {

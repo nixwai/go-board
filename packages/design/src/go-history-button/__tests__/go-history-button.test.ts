@@ -142,6 +142,40 @@ describe('goHistoryButton', () => {
     expect(mount(GoHistoryButton, { props: { disabled: true } }).attributes('disabled')).toBeDefined();
   });
 
+  it('disables the action when GoSave is disabled and stops firing history mutations', async () => {
+    const { button, saveApi, wrapper } = mountSavedButton();
+    const changes: string[] = [];
+    saveApi.onListen((change) => { changes.push(change.key); }, () => {});
+    changes.length = 0;
+
+    expect(button.attributes('disabled')).toBeUndefined();
+
+    await wrapper.setProps({ disabled: true });
+    await nextTick();
+    expect(button.attributes('disabled')).toBeDefined();
+
+    await wrapper.get('button.go-history-button').trigger('click');
+    expect(changes).toEqual([]);
+
+    await wrapper.setProps({ disabled: false });
+    await nextTick();
+    expect(button.attributes('disabled')).toBeUndefined();
+  });
+
+  it('combines its own disabled prop with the GoSave disabled flag', () => {
+    const ownDisabled = mount(GoSave, {
+      props: { value: [snapshot(1), snapshot(-1)] },
+      slots: { default: () => h(GoHistoryButton, { step: -1, disabled: true }) },
+    });
+    const savedDisabled = mount(GoSave, {
+      props: { disabled: true, value: [snapshot(1), snapshot(-1)] },
+      slots: { default: () => h(GoHistoryButton, { step: -1 }) },
+    });
+
+    expect(ownDisabled.findComponent(GoHistoryButton).attributes('disabled')).toBeDefined();
+    expect(savedDisabled.findComponent(GoHistoryButton).attributes('disabled')).toBeDefined();
+  });
+
   it('unregisters the shared history listener when unmounted', () => {
     const unregister = vi.fn();
     const onListen: GoSaveContext['onListen'] = (_listener, beforeUnmount) => {

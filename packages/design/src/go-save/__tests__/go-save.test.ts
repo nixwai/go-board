@@ -197,6 +197,23 @@ describe('goSave', () => {
 
     expect(context.version).toBe(0);
   });
+  it('exposes the disabled flag through the injected context and tracks prop changes', async () => {
+    let context!: GoSaveContext;
+    const Child = createChild((value) => { context = value; });
+    const wrapper = mount(GoSave, {
+      props: { disabled: false },
+      slots: { default: () => h(Child) },
+    });
+
+    expect(context.disabled).toBe(false);
+
+    await wrapper.setProps({ disabled: true });
+    expect(context.disabled).toBe(true);
+
+    await wrapper.setProps({ disabled: false });
+    expect(context.disabled).toBe(false);
+  });
+
   it('replays the latest history data when a listener registers after operations', () => {
     let context!: GoSaveContext;
     const Child = createChild((value) => { context = value; });

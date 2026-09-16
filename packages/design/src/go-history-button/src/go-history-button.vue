@@ -22,6 +22,7 @@ defineSlots<{
 const attrs = useAttrs();
 
 const {
+  disabled: contextDisabled,
   current,
   snapshotLen,
   clearSnapshots,
@@ -40,7 +41,12 @@ const defaultLabel = computed(() => {
 });
 
 const isDisabled = computed(() => {
-  if (props.disabled || normalizedStep.value === undefined || !snapshotLen.value) {
+  if (
+    contextDisabled.value
+    || props.disabled
+    || normalizedStep.value === undefined
+    || !snapshotLen.value
+  ) {
     return true;
   }
 
