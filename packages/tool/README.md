@@ -192,6 +192,21 @@ history.insert({ size: 9, player: 1 });
 | `forward` | `step?: number` | `GoGameOptions \| undefined` | 向后移动指定步数，默认 1 步；步数必须为正整数。 |
 | `jump` | `position: number` | `GoGameOptions \| undefined` | 跳转到指定历史位置；越界或非整数时保持当前位置不变。 |
 | `insert` | `snapshot: GoGameOptions`<br>`position?: number` | `boolean` | 在指定位置插入快照，并丢弃该位置之后的全部历史；默认插入当前位置之后。 |
+## 形势布局
+
+`getInfluenceLayout()` 仅使用 `@sabaki/deadstones` 的 `getProbabilityMap()` 计算形势布局。每个位置的概率绝对值大于 `0.15` 时才有效，正值归为黑方势力，负值归为白方势力，否则归为中立。无论该位置是否已有棋子，均以概率计算结果为准。函数不会修改传入布局。
+
+```ts
+import { getInfluenceLayout } from '@go-board/tool';
+
+const influence = await getInfluenceLayout(layout, {
+  iterations: 300,
+});
+```
+
+| 函数 | 参数 | 返回值 | 说明 |
+| --- | --- | --- | --- |
+| `getInfluenceLayout` | `layout: GoLayout`<br>`options?: GoInfluenceOptions` | `Promise<GoLayout>` | 使用概率图直接计算黑白双方势力归属。 |
 ## 创建函数
 
 | 函数 | 参数 | 返回值 | 说明 |

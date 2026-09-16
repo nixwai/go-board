@@ -83,6 +83,7 @@ function handleUpdate(event: GoGameSnapshot) {
             :width="480"
             :init="init"
             show-coord
+            show-influence
             aria-label="九路围棋棋盘"
             @update="handleUpdate"
           />

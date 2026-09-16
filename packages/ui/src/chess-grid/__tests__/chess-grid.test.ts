@@ -25,6 +25,52 @@ describe('chessGrid', () => {
     ]);
   });
 
+  it('passes influence values and positions to the scoped slot', () => {
+    const wrapper = mount(ChessGrid, {
+      props: {
+        rows: [
+          [1, 0],
+          [0, -1],
+        ],
+        influences: [
+          [-1, 1],
+          [1, 0],
+        ],
+      },
+      slots: { default: ({ sign, influence, position }) => `${JSON.stringify(position)}:${sign}:${influence}` },
+    });
+
+    expect(wrapper.findAll('.chess-grid-cell').map(cell => cell.text())).toEqual([
+      '[0,0]:1:-1',
+      '[1,0]:0:1',
+      '[0,1]:0:1',
+      '[1,1]:-1:0',
+    ]);
+  });
+
+  it('defaults missing influence values to zero', () => {
+    const wrapper = mount(ChessGrid, {
+      props: {
+        rows: [
+          [0, 0],
+          [0, 0],
+        ],
+        influences: [[1]],
+      },
+      slots: { default: ({ influence }) => String(influence) },
+    });
+
+    expect(wrapper.findAll('.chess-grid-cell').map(cell => cell.text())).toEqual(['1', '0', '0', '0']);
+  });
+
+  it('defaults all influence values to zero when influences are omitted', () => {
+    const wrapper = mount(ChessGrid, {
+      props: { rows: [[0, 0]] },
+      slots: { default: ({ influence }) => String(influence) },
+    });
+
+    expect(wrapper.findAll('.chess-grid-cell').map(cell => cell.text())).toEqual(['0', '0']);
+  });
   it('does not render board lines', () => {
     const wrapper = mount(ChessGrid, { props: { rows: [[0]] } });
 

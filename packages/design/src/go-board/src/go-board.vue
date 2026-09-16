@@ -4,16 +4,19 @@ import type { GoSaveChange } from '../../go-save/src/go-save';
 import type { GoBoardExposed, GoBoardProps } from './go-board';
 
 import { GoGameData, vertexEquals } from '@go-board/tool';
-import { Chessboard, ChessGrid, ChessPiece } from '@go-board/ui';
+import { Chessboard, ChessGrid, ChessInfluence, ChessPiece } from '@go-board/ui';
 import { nextTick, ref } from 'vue';
 import { useGoSave } from '../../composables/use-go-save';
 import { GO_SAVE_EVENT } from '../../go-save/src/keys';
+import { useInfluence } from './composables/use-influence';
 
 defineOptions({ name: 'GoBoard' });
 
 const props = withDefaults(defineProps<GoBoardProps>(), {
   disabled: false,
   showCoord: false,
+  showInfluence: false,
+  influenceMinStoneRatio: 0.1,
   width: '100%',
 });
 
@@ -34,6 +37,12 @@ const {
 /** 由规则引擎维护对局状态，组件状态仅负责驱动视图。 */
 const goGameData = new GoGameData(props.init);
 const goSnapshot = ref<GoGameSnapshot>(goGameData.snapshot);
+/** 由形势分析组合式函数维护当前黑白双方离散势力归属。 */
+const { influenceLayout } = useInfluence({
+  layout: () => goSnapshot.value.layout,
+  showInfluence: () => props.showInfluence,
+  influenceMinStoneRatio: () => props.influenceMinStoneRatio,
+});
 const hoverPosition = ref<GoVertex>();
 
 /** 通知外部当前完整对局快照。 */
@@ -146,11 +155,12 @@ if (hasGoSave) {
   >
     <ChessGrid
       :rows="goSnapshot.layout"
+      :influences="influenceLayout"
       :disabled="props.disabled"
       @cell-mouseenter="setHover"
       @cell-click="play"
     >
-      <template #default="{ sign, position }">
+      <template #default="{ sign, influence, position }">
         <ChessPiece
           v-if="sign"
           :sign="sign"
@@ -160,6 +170,10 @@ if (hasGoSave) {
           v-else-if="vertexEquals(position, hoverPosition)"
           :sign="goSnapshot.player"
           preview
+        />
+        <ChessInfluence
+          v-if="influence && influence !== sign"
+          :sign="influence"
         />
       </template>
     </ChessGrid>

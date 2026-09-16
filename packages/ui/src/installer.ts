@@ -1,6 +1,7 @@
 import type { App, Component, Plugin } from 'vue';
 import { version } from '../package.json';
 import { ChessGrid } from './chess-grid';
+import { ChessInfluence } from './chess-influence';
 import { ChessPiece } from './chess-piece';
 import { Chessboard } from './chessboard';
 
@@ -8,6 +9,7 @@ const INSTALLED_KEY = Symbol('INSTALLED_KEY');
 
 const installer = makeInstaller([
   ChessGrid,
+  ChessInfluence,
   ChessPiece,
   Chessboard,
 ]);

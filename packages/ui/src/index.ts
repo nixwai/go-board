@@ -1,5 +1,7 @@
 /** 导出棋盘网格组件及其类型。 */
 export * from './chess-grid';
+/** 导出棋子势力组件及其类型。 */
+export * from './chess-influence';
 /** 导出棋子组件及其类型。 */
 export * from './chess-piece';
 /** 导出棋盘容器组件及其类型。 */
