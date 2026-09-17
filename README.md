@@ -138,6 +138,8 @@ function handleUpdate(event: GoGameSnapshot) {
 
 `GoSave` 作为容器包裹 `GoBoard` 及历史控制组件后，会自动保存落子快照，并在切换历史记录时同步棋盘；也可以通过 `v-model:value` 读取或替换全部历史快照。
 
+将 `disabled` 设为 `true` 后，`GoSave` 会通过上下文禁用插槽内已接入存档上下文的库内组件；该状态与各组件自身 `disabled` 叠加，任一为 `true` 即禁用。
+
 ```vue
 <script setup lang="ts">
 import type { GoGameOptions } from '@go-board/design';
@@ -146,10 +148,11 @@ import { GoBoard, GoHistoryButton, GoHistorySlider, GoSave } from '@go-board/des
 import { ref } from 'vue';
 
 const history = ref<GoGameOptions[]>([]);
+const disabled = ref(false);
 </script>
 
 <template>
-  <GoSave v-model:value="history">
+  <GoSave v-model:value="history" :disabled="disabled">
     <GoBoard :init="{ size: 9 }" aria-label="九路围棋棋盘" />
     <GoHistorySlider aria-label="棋局历史" />
     <GoHistoryButton :step="-1">后退</GoHistoryButton>
@@ -168,7 +171,7 @@ const history = ref<GoGameOptions[]>([]);
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `disabled` | `boolean` | `false` | 是否禁用棋盘单元格及鼠标交互。禁用后仍可通过组件实例调用 `play()` 和 `reset()`。 |
+| `disabled` | `boolean` | `false` | 是否禁用棋盘单元格及鼠标交互。位于 `GoSave` 内时与 `GoSave.disabled` 叠加，任一为 `true` 即禁用；禁用后仍可通过组件实例调用 `play()` 和 `reset()`。 |
 | `width` | `number \| string` | `'100%'` | 棋盘容器宽度。正数按像素处理，字符串作为 CSS 宽度值使用；无效数字或空字符串使用 `100%`。 |
 | `showCoord` | `boolean` | `false` | 是否在棋盘左侧显示从上到下递减的行坐标、下侧显示跳过字母 I 的列坐标。 |
 | `showInfluence` | `boolean` | `false` | 是否显示黑白双方的离散势力归属。 |
@@ -254,13 +257,14 @@ boardRef.value?.reset({ size: 13, player: 1 });
 
 ### GoSave
 
-存档容器组件，使用 `value` 初始化或受控管理棋局快照列表，并通过默认插槽为子组件提供历史记录上下文。`GoBoard`、`GoHistoryButton` 和 `GoHistorySlider` 放在其默认插槽内时会自动协同工作。
+存档容器组件，使用 `value` 初始化或受控管理棋局快照列表，并通过默认插槽为子组件提供历史记录上下文。`GoBoard`、`GoHistoryButton` 和 `GoHistorySlider` 放在其默认插槽内时会自动协同工作，并通过上下文响应 `disabled`。
 
 #### Props
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `value` | `GoGameOptions[]` | `[]` | 初始化或受控的历史快照列表；组件只复制快照列表，不深拷贝快照对象。 |
+| `disabled` | `boolean` | `false` | 是否禁用插槽内已接入存档上下文的库内组件。仅 `GoBoard`、`GoHistoryButton` 和 `GoHistorySlider` 会响应；与子组件自身 `disabled` 叠加，任一为 `true` 即禁用。 |
 
 #### Events
 
@@ -349,6 +353,7 @@ import { GoBoard, GoSave } from '@go-board/design';
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `isValid` | `boolean` | 是否获取到可用的 `GoSave` 上下文。 |
+| `disabled` | `ComputedRef<boolean>` | `GoSave` 下发的禁用状态；未获取到上下文时为 `false`。 |
 | `version` | `Ref<number>` | 历史状态版本；每次有效的历史数据、位置变化或受控重建后递增。 |
 | `current` | `Ref<number>` | 当前历史位置；无历史记录时为 `-1`。 |
 | `snapshot` | `Ref<GoGameOptions \| undefined>` | 当前历史位置对应的快照。 |
@@ -362,28 +367,28 @@ import { GoBoard, GoSave } from '@go-board/design';
 | `clearSnapshots` | `() => void` | 清除全部历史记录。 |
 | `onSnapshotListen` | `(listener: GoSaveChangeListener) => void` | 监听外部历史变化，并自动过滤由当前 `useGoSave` 实例的操作方法主动触发的同一次变更。 |
 
-未获取到 `GoSave` 上下文时，`isValid` 为 `false`，响应式状态使用空历史默认值，操作方法不会修改任何数据。
+未获取到 `GoSave` 上下文时，`isValid` 为 `false`，`disabled` 为 `false`，响应式状态使用空历史默认值，操作方法不会修改任何数据。
 
 ### GoHistoryButton
 
-历史记录控制按钮，必须放在 `GoSave` 默认插槽内使用。`step` 为正数时前进，为负数时后退，`0` 清空历史；非整数会使按钮禁用。未提供默认插槽内容时，按钮文本按步数显示为“前进”“后退”或“清空”。
+历史记录控制按钮，必须放在 `GoSave` 默认插槽内使用。`step` 为正数时前进，为负数时后退，`0` 清空历史；非整数会使按钮禁用。`GoSave.disabled` 会与按钮自身的 `disabled` 叠加，任一为 `true` 时禁用。未提供默认插槽内容时，按钮文本按步数显示为“前进”“后退”或“清空”。
 
 #### Props
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `disabled` | `boolean` | `false` | 是否禁用按钮。 |
+| `disabled` | `boolean` | `false` | 是否禁用按钮；与 `GoSave.disabled` 叠加。 |
 | `step` | `number` | `-1` | 有符号整数步数；正数前进，负数后退，`0` 清空历史。 |
 
 ### GoHistorySlider
 
-历史快照滑动输入条，必须放在 `GoSave` 默认插槽内使用。滑块位置对应历史快照的绝对索引；无历史记录时自动禁用。
+历史快照滑动输入条，必须放在 `GoSave` 默认插槽内使用。滑块位置对应历史快照的绝对索引；无历史记录时自动禁用。`GoSave.disabled` 会与滑块自身的 `disabled` 叠加，任一为 `true` 时禁用。
 
 #### Props
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `disabled` | `boolean` | `false` | 是否禁用滑块。 |
+| `disabled` | `boolean` | `false` | 是否禁用滑块；与 `GoSave.disabled` 叠加。 |
 
 `GoHistoryButton` 和 `GoHistorySlider` 会透传原生 DOM 属性、`class`、`style` 及事件，可通过 `aria-label` 或 `aria-labelledby` 补充无障碍名称。
 ## 其他
